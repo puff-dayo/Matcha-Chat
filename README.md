@@ -15,6 +15,7 @@ The app interface allows for **easy** one-click installation of [llama.cpp](http
 - **Character management**: Load and save character cards(json) for personalized chat experiences. 
 - **Hardware acceration support**: Choose between openBLAS and cuBLAS.
 - **Highly efficient**: The GUI component of the software is consuming only ~32MB of RAM, representing a significant resource saving compared to running a web UI in Chrome, allowing even devices with 8GB of RAM to run models quantized to 5-bit.
+- **Auto Dark/Light mode**
 
 ![image](https://github.com/puff-dayo/matcha-chat/assets/84665734/fd8d837a-1a18-4bef-9e51-43a753b570d5)
 
