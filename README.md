@@ -65,7 +65,7 @@ NOTE: Once you have configured all three stpes, you only need to press "*3. Laun
 Before running Matcha Chat, ensure you have Python installed. Clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/puff-dayo/matcha-chat.git
+git clone https://github.com/puff-dayo/Matcha-Chat.git
 ```
 
 Navigate to the cloned directory and install the required packages, then lauch the GUI:
