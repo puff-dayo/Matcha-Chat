@@ -1,5 +1,7 @@
 # Matcha Chat
 
+<img src="https://github.com/puff-dayo/matcha-chat/assets/84665734/05193c75-13d2-472b-8c6c-0c6bb960114f" width="64" />
+
 ## Introduction
 
 **Matcha Chat** is a **GUI** chat app for **Windows OS** designed to chat with a **local language model AI**, built with a [Python](https://www.python.org/) backend and a [Pyside](https://pypi.org/project/PySide6/) front end.
@@ -14,11 +16,14 @@ The app interface allows for **easy** one-click installation of [llama.cpp](http
 - **Hardware acceration support**: Choose between openBLAS and cuBLAS.
 - **Highly efficient**: The GUI component of the software is consuming only ~32MB of RAM, representing a significant resource saving compared to running a web UI in Chrome, allowing even devices with 8GB of RAM to run models quantized to 5-bit.
 
+![image](https://github.com/puff-dayo/matcha-chat/assets/84665734/e6acdc84-4d5f-472e-9456-d78c13dccc51)
+
+
 ## Step 1: Get the executable
 
-Download the built binary executable file for x64 Windows OS from [Release](https://somewhere).
+Download the built binary executable file for x64 Windows OS from [Release](https://github.com/puff-dayo/matcha-chat/releases/).
 
-## Step 2: The first click installation
+## Step 2: The first click
 
 ### CPU Acceleration
 
@@ -36,39 +41,29 @@ Before lauching the llama.cp service, make sure to set the number of layers to b
 
 Note: Generally, a modern graphics card is required to achieve better performance than CPU acceleration.
 
-## Step 3: The second click installation
+## Step 3: The second click
 
 After completing the installation with step 2, proceed with the following steps:
 
 
 
 1. Use button "*2. Download a model*" to download the model.
-2. Afterward, use "*3. Launch Llama server" to launch.
+2. Afterward, use "*3. Launch Llama server*" to launch.
 
 
 
-Once you have configured all three stpes, you only need to press "*3. Launch Llama server*" to start the program for future chats.
+NOTE: Once you have configured all three stpes, you only need to press "*3. Launch Llama server*" to start the llama for future chats.
 
 
 
-
-
-## Screenshots
-
-- The main window is divided into two sections: the left side for chat and the right side for quick installation, system and model configurations.
-- Use the 'Send' button or Ctrl+Enter to send messages.
-- The 'Clear' button clears the current message input field.
-
-
-
-## Other Infomation
+## Other Useful Infomation
 
 ### Run from source
 
 Before running Matcha Chat, ensure you have Python installed. Clone the repository to your local machine:
 
 ```bash
-git clone [repository-url]
+git clone https://github.com/puff-dayo/matcha-chat.git
 ```
 
 Navigate to the cloned directory and install the required packages, then lauch the GUI:
@@ -83,9 +78,12 @@ python gui.py
 
 If you like to~
 
-:P
-
 ```bash
-nuitka --onefile --disable-console --plugin-enable=pyside6 --windows-icon-from-ico=./icon1.ico gui.py
+nuitka --onefile --disable-console --plugin-enable=pyside6 --windows-icon-from-ico=PATH-TO-ICON gui.py
 ```
 
+### More about hardware
+
+![image](https://github.com/puff-dayo/matcha-chat/assets/84665734/bcc12d5e-5987-4331-aab8-37ae20fbd726)
+
+Tested on Windows 11, 8GB RAM, 4GB VRAM(10 layers GPU offload) with a cup of matcha latte.
