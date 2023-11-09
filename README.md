@@ -19,19 +19,21 @@ The app interface allows for **easy** one-click installation of [llama.cpp](http
 
 ![image](https://github.com/puff-dayo/matcha-chat/assets/84665734/fd8d837a-1a18-4bef-9e51-43a753b570d5)
 
-## Step 1: Get the executable
+## Installation Guide
+
+### Step 1: Get the executable
 
 Download the built binary executable file for x64 Windows OS from [Release](https://github.com/puff-dayo/matcha-chat/releases/).
 
-## Step 2: The first click
+### Step 2: The first click
 
-### CPU Acceleration
+#### CPU Acceleration
 
 Click on the upper button "*1. Download llama.cpp*" to install Llama.cpp with openBLAS support.
 
 At least 4GB of free memory for the recommended configuration.
 
-### GPU Acceleration
+#### GPU Acceleration
 
 Directly click on the button "*1. Enable GPU acceleration*" located below the buttons, instead of the upper one,to install Llama with cuBLAS support.
 
@@ -41,7 +43,7 @@ Before lauching the llama.cp service, make sure to set the number of layers to b
 
 Note: Generally, a modern graphics card is required to achieve better performance than CPU acceleration.
 
-## Step 3: The second click
+### Step 3: The second click
 
 After completing the installation with step 2, proceed with the following steps:
 
