@@ -1,6 +1,6 @@
 # Matcha Chat
 
-<img src="https://github.com/puff-dayo/matcha-chat/assets/84665734/05193c75-13d2-472b-8c6c-0c6bb960114f" width="64" />
+<img src="https://github.com/puff-dayo/matcha-chat/assets/84665734/5401d53a-2265-4038-a812-e9c2bd28afa4" width="64" />
 
 ## Introduction
 
@@ -16,8 +16,7 @@ The app interface allows for **easy** one-click installation of [llama.cpp](http
 - **Hardware acceration support**: Choose between openBLAS and cuBLAS.
 - **Highly efficient**: The GUI component of the software is consuming only ~32MB of RAM, representing a significant resource saving compared to running a web UI in Chrome, allowing even devices with 8GB of RAM to run models quantized to 5-bit.
 
-![image](https://github.com/puff-dayo/matcha-chat/assets/84665734/e6acdc84-4d5f-472e-9456-d78c13dccc51)
-
+![image](https://github.com/puff-dayo/matcha-chat/assets/84665734/fd8d837a-1a18-4bef-9e51-43a753b570d5)
 
 ## Step 1: Get the executable
 
@@ -84,6 +83,6 @@ nuitka --onefile --disable-console --plugin-enable=pyside6 --windows-icon-from-i
 
 ### More about hardware
 
-![image](https://github.com/puff-dayo/matcha-chat/assets/84665734/bcc12d5e-5987-4331-aab8-37ae20fbd726)
+![image](https://github.com/puff-dayo/matcha-chat/assets/84665734/bd63b362-0522-4128-a690-cb80fffef3e4)
 
 Tested on Windows 11, 8GB RAM, 4GB VRAM(10 layers GPU offload) with a cup of matcha latte.
