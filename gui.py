@@ -323,17 +323,20 @@ class ChatUI(QWidget):
                 response_content = func.get_response(self.prompt, custom_stop_sequence, self.n_pridict_spinbox.value())
                 self.append_message(self.ai_name, response_content.lstrip().rstrip('\n'))
                 self.if_first = True
+                if response_content.endswith("\n"):
+                    self.next_prompt = self.prompt + response_content + self.user_name + ":"
+                else:
+                    self.next_prompt = self.prompt + response_content + "\n" + self.user_name + ":"
             else:
                 self.next_prompt = self.next_prompt + message + '\n' + self.ai_name + ':'
                 print('2:' + self.next_prompt)
                 response_content = func.get_response(self.next_prompt, custom_stop_sequence,
                                                      self.n_pridict_spinbox.value())
                 self.append_message(self.ai_name, response_content.lstrip().rstrip('\n'))
-
-            if response_content.endswith("\n"):
-                self.next_prompt = self.prompt + response_content + self.user_name + ":"
-            else:
-                self.next_prompt = self.prompt + response_content + "\n" + self.user_name + ":"
+                if response_content.endswith("\n"):
+                    self.next_prompt = self.next_prompt + response_content + self.user_name + ":"
+                else:
+                    self.next_prompt = self.next_prompt + response_content + "\n" + self.user_name + ":"
 
             self.input_line.clear()
             self.setWindowTitle("Matcha Chat")
