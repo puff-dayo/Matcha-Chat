@@ -1,4 +1,4 @@
-# Matcha Chat
+****# Matcha Chat
 
 <img src="https://github.com/puff-dayo/matcha-chat/assets/84665734/5401d53a-2265-4038-a812-e9c2bd28afa4" width="64" />
 
@@ -7,6 +7,8 @@
 **Matcha Chat** is a **GUI** chat app for **Windows OS** designed to chat with a **local language model AI**, built with a [Python](https://www.python.org/) backend and a [Pyside](https://pypi.org/project/PySide6/) front end.
 
 The app interface allows for **easy** one-click installation of [llama.cpp](https://github.com/ggerganov/llama.cpp) and [Wizard Vicuna](https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF), message sending, system configuration, and management of character cards.
+
+Version 1.1: Fix a severe bug leads to Fluffy's amnesia. :P Sorry!
 
 ## Features
 
