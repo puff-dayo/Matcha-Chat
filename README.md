@@ -8,7 +8,9 @@
 
 The app interface allows for **easy** one-click installation of [llama.cpp](https://github.com/ggerganov/llama.cpp) and [Wizard Vicuna](https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF), message sending, system configuration, and management of character cards.
 
-Version 1.1: Fix a severe bug leads to Fluffy's amnesia. :P Sorry!
+$${\color{green} Version \space 1.1: \space Fix \space a \space severe \space bug \space leads \space to \space her \space amnesia. \space :P \space Sorry! \space}$$
+
+How to update: simply replace the binary file.
 
 ## Features
 
