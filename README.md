@@ -1,4 +1,4 @@
-****# Matcha Chat
+# Matcha Chat
 
 <img src="https://github.com/puff-dayo/matcha-chat/assets/84665734/5401d53a-2265-4038-a812-e9c2bd28afa4" width="64" />
 
