@@ -17,7 +17,7 @@ os.makedirs(models_dir, exist_ok=True)
 
 
 def get_response(prompt, stop_sequence, n_predict=512):
-    url = "http://localhost:35634/completion"
+    url = "http://127.0.0.1:35634/completion"
     headers = {"Content-Type": "application/json"}
     data = {
         "prompt": prompt,
@@ -75,7 +75,7 @@ def run_server_func(thread_count, cache_size, gpu_layers):
     command = [
         pkgs_dir + '/server',
         '-m', models_dir + '/Wizard-Vicuna-7B-Uncensored.Q5_K_M.gguf',
-        '--host', '0.0.0.0',
+        '--host', '127.0.0.1',
         '--port', '35634',
         '-t', str(thread_count),
         '-c', str(cache_size),
