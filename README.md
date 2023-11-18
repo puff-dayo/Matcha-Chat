@@ -8,9 +8,11 @@
 
 The app interface allows for **easy** one-click installation of [llama.cpp](https://github.com/ggerganov/llama.cpp) and [Wizard Vicuna](https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF), message sending, system configuration, and management of character cards.
 
-$${\color{green} Version \space 1.1: \space Fix \space a \space severe \space bug \space leads \space to \space her \space amnesia. \space :P \space Sorry! \space}$$
+${\color{lightgreen} Version \space 1.1: \space Fix \space a \space severe \space bug \space leads \space to \space her \space amnesia. \space :P \space Sorry! \space}$
 
-How to update: simply replace the binary file.
+${\color{pink} Version \space 1.2: \space Fix \space a \space security \space issue. \space :D \space Sorry! \space}$
+
+**How to update: simply replace the binary file.**
 
 ## Features
 
