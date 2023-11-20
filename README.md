@@ -30,7 +30,8 @@ Download the built binary executable file for x64 Windows OS from [Release](http
 ### Step 2: The first click
 
 > [!CAUTION]
-> Setting more GPU layers ≠ Faster speed! Choose '**CPU Acceleration**' unless you have a STRONG enough GPU.
+> Using GPU or setting more GPU layers ≠ Faster speed!
+> Choose **CPU Acceleration** unless you have a STRONG enough GPU.
 
 #### CPU Acceleration
 
