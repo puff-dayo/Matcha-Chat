@@ -8,10 +8,6 @@
 
 The app interface allows for **easy** one-click installation of [llama.cpp](https://github.com/ggerganov/llama.cpp) and [Wizard Vicuna](https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF), message sending, system configuration, and management of character cards.
 
-${\color{lightgreen} Version \space 1.1: \space Fix \space a \space severe \space bug \space leads \space to \space her \space amnesia. \space :P \space Sorry! \space}$
-
-${\color{pink} Version \space 1.2: \space Fix \space a \space security \space issue. \space :D \space Sorry! \space}$
-
 **How to update: simply replace the binary file.**
 
 ## Features
@@ -23,7 +19,7 @@ ${\color{pink} Version \space 1.2: \space Fix \space a \space security \space is
 - **Highly efficient**: The GUI component of the software is consuming only ~32MB of RAM, representing a significant resource saving compared to running a web UI in Chrome, allowing even devices with 8GB of RAM to run models quantized to 5-bit.
 - **Auto Dark/Light mode**
 
-![image](https://github.com/puff-dayo/matcha-chat/assets/84665734/fd8d837a-1a18-4bef-9e51-43a753b570d5)
+![1700484685905](https://github.com/puff-dayo/Matcha-Chat/assets/84665734/e998b24f-46f3-4d67-9ab7-ee70c1ba6659)
 
 ## Installation Guide
 
@@ -32,6 +28,9 @@ ${\color{pink} Version \space 1.2: \space Fix \space a \space security \space is
 Download the built binary executable file for x64 Windows OS from [Release](https://github.com/puff-dayo/matcha-chat/releases/).
 
 ### Step 2: The first click
+
+> [!CAUTION]
+> Setting more GPU layers ≠ Faster speed! Choose '**CPU Acceleration**' unless you have a STRONG enough GPU.
 
 #### CPU Acceleration
 
