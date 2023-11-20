@@ -16,13 +16,14 @@ models_dir = os.path.join(os.getcwd(), 'models')
 os.makedirs(models_dir, exist_ok=True)
 
 
-def get_response(prompt, stop_sequence, n_predict=512):
+def get_response(prompt, stop_sequence, n_predict=512, temperature=0.95):
     url = "http://127.0.0.1:35634/completion"
     headers = {"Content-Type": "application/json"}
     data = {
         "prompt": prompt,
         "n_predict": n_predict,
-        "stop": stop_sequence
+        "stop": stop_sequence,
+        "temperature": temperature
     }
 
     response = requests.post(url, headers=headers, json=data)

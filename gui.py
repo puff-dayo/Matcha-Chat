@@ -6,17 +6,18 @@ from PySide6.QtCore import QDateTime, QObject, Signal, Qt
 from PySide6.QtGui import QTextCursor, QTextCharFormat, QColor, QFont, QIcon
 from PySide6.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout,
                                QTextEdit, QLineEdit, QPushButton, QGroupBox,
-                               QFormLayout, QSpinBox, QLabel, QFileDialog, QMessageBox)
+                               QFormLayout, QSpinBox, QLabel, QFileDialog, QMessageBox, QDoubleSpinBox)
 
+import cuda_dl
 import func
 import model_dl
-import cuda_dl
 
 
 class ParameterController(QObject):
     thread_count_changed = Signal(int)
     cache_size_changed = Signal(int)
     n_predict_change = Signal(int)
+
 
 parameter_controller = ParameterController()
 
@@ -117,27 +118,39 @@ class ChatUI(QWidget):
 
         self.thread_count_spinbox = QSpinBox()
         self.thread_count_spinbox.setMinimum(1)
-        self.thread_count_spinbox.setMaximum(32)
+        self.thread_count_spinbox.setMaximum(128)
         self.thread_count_spinbox.setValue(16)
+        self.thread_count_spinbox.setToolTip("Set the number of threads for processing.\n\nRange: 1-128.")
         group_layout2.addRow("Thread count:", self.thread_count_spinbox)
 
         self.content_size_spinbox = QSpinBox()
-        self.content_size_spinbox.setMinimum(1024)
-        self.content_size_spinbox.setMaximum(8192)
+        self.content_size_spinbox.setMinimum(256)
+        self.content_size_spinbox.setMaximum(4096)
         self.content_size_spinbox.setValue(4096)
+        self.content_size_spinbox.setToolTip("The maximum sequence length that this model might ever be used with.\n\nRange: 256-4096.")
         group_layout2.addRow("Content size:", self.content_size_spinbox)
 
         self.gpu_layer_spinbox = QSpinBox()
         self.gpu_layer_spinbox.setMinimum(0)
         self.gpu_layer_spinbox.setMaximum(1024)
         self.gpu_layer_spinbox.setValue(10)
+        self.gpu_layer_spinbox.setToolTip("This option allows offloading some layers to the GPU for computation. Generally results in increased performance.\n\nNeeds much more RAM.")
         group_layout2.addRow("GPU layers:", self.gpu_layer_spinbox)
 
         self.n_pridict_spinbox = QSpinBox()
-        self.n_pridict_spinbox.setMinimum(128)
-        self.n_pridict_spinbox.setMaximum(4096)
+        self.n_pridict_spinbox.setMinimum(64)
+        self.n_pridict_spinbox.setMaximum(8192)
         self.n_pridict_spinbox.setValue(512)
+        self.n_pridict_spinbox.setToolTip("Set the maximum number of tokens to predict when generating text.\n\nRange: 64-8192.\n(-1 = infinity)")
         group_layout2.addRow("Next predict:", self.n_pridict_spinbox)
+
+        self.temperature_spinbox = QDoubleSpinBox()
+        self.temperature_spinbox.setMinimum(0.001)
+        self.temperature_spinbox.setMaximum(10)
+        self.temperature_spinbox.setValue(0.95)
+        self.temperature_spinbox.setSingleStep(0.1)
+        self.temperature_spinbox.setToolTip("Adjust the randomness of the generated text (default: 0.95).")
+        group_layout2.addRow("Temperature:", self.temperature_spinbox)
 
         self.thread_count_spinbox.valueChanged.connect(parameter_controller.thread_count_changed.emit)
         self.content_size_spinbox.valueChanged.connect(parameter_controller.cache_size_changed.emit)
@@ -291,7 +304,7 @@ class ChatUI(QWidget):
 
     def append_message(self, sender, message):
         current_time = QDateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss")
-        color = "#FF9999" if sender == "Mistress" else "#99CCFF"
+        color = "#FF9999" if sender == self.user_name else "#99CCFF"
 
         cursor = self.chat_display.textCursor()
         cursor.movePosition(QTextCursor.End)
@@ -320,7 +333,8 @@ class ChatUI(QWidget):
             if not self.if_first:
                 self.prompt = self.sys_prompt + message + '\n' + self.ai_name + ':'
                 print('1:' + self.prompt)
-                response_content = func.get_response(self.prompt, custom_stop_sequence, self.n_pridict_spinbox.value())
+                response_content = func.get_response(self.prompt, custom_stop_sequence, self.n_pridict_spinbox.value(),
+                                                     self.temperature_spinbox.value())
                 self.append_message(self.ai_name, response_content.lstrip().rstrip('\n'))
                 self.if_first = True
                 if response_content.endswith("\n"):
@@ -331,7 +345,7 @@ class ChatUI(QWidget):
                 self.next_prompt = self.next_prompt + message + '\n' + self.ai_name + ':'
                 print('2:' + self.next_prompt)
                 response_content = func.get_response(self.next_prompt, custom_stop_sequence,
-                                                     self.n_pridict_spinbox.value())
+                                                     self.n_pridict_spinbox.value(), self.temperature_spinbox.value())
                 self.append_message(self.ai_name, response_content.lstrip().rstrip('\n'))
                 if response_content.endswith("\n"):
                     self.next_prompt = self.next_prompt + response_content + self.user_name + ":"
