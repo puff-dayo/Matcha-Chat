@@ -138,10 +138,10 @@ class ChatUI(QWidget):
         group_layout2.addRow("GPU layers:", self.gpu_layer_spinbox)
 
         self.n_pridict_spinbox = QSpinBox()
-        self.n_pridict_spinbox.setMinimum(64)
+        self.n_pridict_spinbox.setMinimum(-1)
         self.n_pridict_spinbox.setMaximum(8192)
         self.n_pridict_spinbox.setValue(512)
-        self.n_pridict_spinbox.setToolTip("Set the maximum number of tokens to predict when generating text.\n\nRange: 64-8192.\n(-1 = infinity)")
+        self.n_pridict_spinbox.setToolTip("Set the maximum number of tokens to predict when generating text.\n\n(-1 = infinity)")
         group_layout2.addRow("Next predict:", self.n_pridict_spinbox)
 
         self.temperature_spinbox = QDoubleSpinBox()
