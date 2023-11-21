@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout,
 
 import cuda_dl
 import func
+import llama_dl
 import model_dl
 
 
@@ -94,7 +95,7 @@ class ChatUI(QWidget):
         group_layout = QFormLayout()
 
         self.button1 = QPushButton("1. Download llama.cpp")
-        self.button1.clicked.connect(lambda: self.llamacpp_dler)
+        self.button1.clicked.connect(lambda: self.llamacpp_dler())
         group_layout.addRow(self.button1)
 
         self.button2 = QPushButton("2. Download a model")
@@ -256,7 +257,10 @@ class ChatUI(QWidget):
         self.sys_prompt = self.get_text_edit_content()
 
     def llamacpp_dler(self):
-        func.get_llama(self.llamaurl)
+        print("0")
+        # func.get_llama(self.llamaurl)
+        llama_dl.DownloadDialog(urls=[self.llamaurl],
+                               dests=["llama-b1485-bin-win-openblas-x64.zip"]).exec()
         self.checkFile()
 
     def cuda_llamacpp_dler(self):
