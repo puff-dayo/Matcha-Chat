@@ -6,18 +6,18 @@
 
 **Matcha Chat** is a **GUI** chat app for **Windows OS** designed to chat with a **local language model AI**, built with a [Python](https://www.python.org/) backend and a [Pyside](https://pypi.org/project/PySide6/) front end.
 
-The app interface allows for **easy** one-click installation of [llama.cpp](https://github.com/ggerganov/llama.cpp) and [Wizard Vicuna](https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF), message sending, system configuration, and management of character cards.
+The app interface allows for **easy** clicks installation of [llama.cpp](https://github.com/ggerganov/llama.cpp) , [Wizard Vicuna](https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF) and vision ability from [llava-v1.5-7b-q4](https://huggingface.co/jartine/llava-v1.5-7B-GGUF/), message sending, system configuration, and management of character cards.
 
-**How to update: simply replace the binary file.**
+**How to update: simply replace the .exe file.**
 
 ## Features
 
 - **Easy-to-use chat interface**: A simple and intuitive chat interface.
-- **One-click(s) installation**: Download essential files and start a chat with just a push of  button. Configure threading, content size, and GPU settings easily.
+- **Clicks installation**: Download essential files and start a chat with just some pushes of button. Configure settings easily.
 - **Character management**: Load and save character cards(json) for personalized chat experiences. 
 - **Hardware acceration support**: Choose between openBLAS and cuBLAS.
-- **Highly efficient**: The GUI component of the software is consuming only ~32MB of RAM, representing a significant resource saving compared to running a web UI in Chrome, allowing even devices with 8GB of RAM to run models quantized to 5-bit.
-- **Auto Dark/Light mode**
+- **Highly efficient**: The GUI component of the software is consuming only ~64MB of RAM, representing a significant resource saving compared to running a web UI in Chrome, allowing even devices with 8GB of RAM to run text models quantized to 5-bit.
+- **Vision ability**: Send images into your llama chat.
 
 ![1700484685905](https://github.com/puff-dayo/Matcha-Chat/assets/84665734/e998b24f-46f3-4d67-9ab7-ee70c1ba6659)
 
@@ -89,9 +89,3 @@ If you like to~
 ```bash
 nuitka --onefile --disable-console --plugin-enable=pyside6 --windows-icon-from-ico=PATH-TO-ICON gui.py
 ```
-
-### More about hardware
-
-![image](https://github.com/puff-dayo/matcha-chat/assets/84665734/bd63b362-0522-4128-a690-cb80fffef3e4)
-
-Tested on Windows 11, 8GB RAM, 4GB VRAM(10 layers GPU offload) with a cup of matcha latte.
