@@ -60,7 +60,8 @@ class DownloadThread(QThread):
         except requests.RequestException as e:
             self.error.emit(f"Download error: {e}")
         finally:
-            self.finished.emit()
+            if not self.is_canceled:
+                self.finished.emit()
 
 
 class DownloadDialog(QDialog):

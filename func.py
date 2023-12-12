@@ -1,10 +1,10 @@
 import json
-
-import requests
 import os
-import zipfile
 import subprocess
 import threading
+import zipfile
+
+import requests
 
 temp_dir = os.path.join(os.getcwd(), 'temp')
 os.makedirs(temp_dir, exist_ok=True)
@@ -23,7 +23,9 @@ def get_response(prompt, stop_sequence, n_predict=512, temperature=0.95):
         "prompt": prompt,
         "n_predict": n_predict,
         "stop": stop_sequence,
-        "temperature": temperature
+        "temperature": temperature,
+        "repeat_penalty": 1.18,
+        "cache_prompt": True
     }
 
     response = requests.post(url, headers=headers, json=data)
@@ -39,7 +41,6 @@ def get_response(prompt, stop_sequence, n_predict=512, temperature=0.95):
 
 
 def download_file(url, directory):
-
     file_name = url.split('/')[-1]
 
     file_path = os.path.join(directory, file_name)
@@ -83,15 +84,39 @@ def run_server_func(thread_count, cache_size, gpu_layers):
         '-ngl', str(gpu_layers)
     ]
 
-    process = subprocess.Popen(command)
+    with open(temp_dir + '/llama_output.log', 'w') as output_file:
+        process = subprocess.Popen(command, stdout=output_file, stderr=subprocess.STDOUT)
     process.wait()
 
     if process.returncode != 0:
         print("Server exited with error code:", process.returncode)
 
 
+def run_server_func_llava():
+    command = [
+        models_dir + '/llava-v1.5-7b-q4-server.llamafile',
+        '--port', '17186',
+        '--nobrowser'
+    ]
+
+    with open(temp_dir + '/llava_output.log', 'w') as output_file:
+        process = subprocess.Popen(command, stdout=output_file, stderr=subprocess.STDOUT)
+    process.wait()
+
+    if process.returncode != 0:
+        print("Server exited with error code:", process.returncode)
+
 
 def run_server(thread_count, cache_size, gpu_layers):
     server_thread = threading.Thread(target=run_server_func, args=(thread_count, cache_size, gpu_layers))
     server_thread.daemon = True
     server_thread.start()
+
+
+def run_server_llava():
+    server_thread = threading.Thread(target=run_server_func_llava)
+    server_thread.daemon = True
+    server_thread.start()
+
+def kill_server_llava():
+    os.system('taskkill /f /im llava-v1.5-7b-q4-server.llamafile.exe')
