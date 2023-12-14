@@ -1,10 +1,11 @@
+import configparser
 import os
-import os
+import re
 
 import requests
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtWidgets import (QVBoxLayout,
-                               QPushButton, QProgressBar, QDialog, QLabel, QMessageBox, QLineEdit)
+                               QPushButton, QProgressBar, QDialog, QLabel, QMessageBox, QLineEdit, QComboBox)
 
 
 class DownloadThread(QThread):
@@ -25,14 +26,12 @@ class DownloadThread(QThread):
         try:
             headers = {}
             if os.path.exists(self.dest):
-
                 headers['Range'] = f'bytes={os.path.getsize(self.dest)}-'
 
             with requests.get(self.url, stream=True, headers=headers, timeout=10) as r:
                 r.raise_for_status()
                 total_size = int(r.headers.get('content-length', 0))
                 if 'content-range' in r.headers:
-
                     total_size = int(r.headers.get('content-range').split('/')[1])
 
                 with open(self.dest, 'ab') as f:
@@ -56,6 +55,11 @@ class DownloadDialog(QDialog):
         super().__init__(parent)
         self.url = url
         self.dest = dest
+        self.model_urls = {
+            "Wizard Vicuna 7B Uncensored Q5, 4.7GB": "https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF/resolve/main/Wizard-Vicuna-7B-Uncensored.Q5_K_M.gguf?download=true",
+            "Stablelm Zephyr 3B Q5 1.99GB": "https://huggingface.co/TheBloke/stablelm-zephyr-3b-GGUF/resolve/main/stablelm-zephyr-3b.Q5_K_M.gguf?download=true",
+            "TinyLlama Chat 1.1B Q4 0.6GB": "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v0.3-GGUF/resolve/main/tinyllama-1.1b-chat-v0.3.Q4_K_M.gguf?download=true",
+        }
         self.initUI()
 
     def initUI(self):
@@ -63,8 +67,9 @@ class DownloadDialog(QDialog):
         self.setGeometry(300, 300, 300, 150)
         layout = QVBoxLayout()
 
-        self.label = QLabel("Download Progress:\n(Default is Wizard Vicuna 7B Uncensored, 4.7GB)", self)
-        layout.addWidget(self.label)
+        self.model_selector = QComboBox(self)
+        self.populate_models()
+        layout.addWidget(self.model_selector)
 
         self.progress_bar = QProgressBar(self)
         layout.addWidget(self.progress_bar)
@@ -83,15 +88,52 @@ class DownloadDialog(QDialog):
 
         self.setLayout(layout)
 
+    @staticmethod
+    def save_model_filename(filename):
+        config = configparser.ConfigParser()
+        config_file = './config.ini'
+
+        if not os.path.exists(config_file):
+            open(config_file, 'w').close()
+
+        config.read(config_file)
+        if 'Download' not in config.sections():
+            config.add_section('Download')
+
+        if 'Model' not in config.sections():
+            config.add_section('Model')
+
+        config.set('Download', 'model_filename', filename)
+
+        config.set('Model', 'is_small', 'No' if filename == "Wizard-Vicuna-7B-Uncensored.Q5_K_M.gguf" else 'Yes')
+
+        with open(config_file, 'w') as configfile:
+            config.write(configfile)
+
+    def populate_models(self):
+        for model_name in self.model_urls.keys():
+            self.model_selector.addItem(model_name)
+        self.model_selector.currentIndexChanged.connect(self.on_model_change)
+
+    def on_model_change(self):
+        model_name = self.model_selector.currentText()
+        self.url = self.model_urls[model_name]
+
     def set_download_url(self):
 
         self.url_input_dialog = URLInputDialog(self)
         if self.url_input_dialog.exec():
             self.url = self.url_input_dialog.get_url()
 
-            self.label.setText(f"Download URL set:\n{self.url}")
+    @staticmethod
+    def extract_filename_from_url(url):
+        match = re.search(r'/([^/?]+)(\?|$)', url)
+        return match.group(1) if match else None
 
     def start_download(self):
+        filename = self.extract_filename_from_url(self.url)
+        if filename:
+            self.dest = os.path.join(os.path.dirname(self.dest), filename)
         self.download_thread = DownloadThread(self.url, self.dest)
         self.download_thread.progress.connect(self.update_progress)
         self.download_thread.finished.connect(self.download_finished)
@@ -113,9 +155,13 @@ class DownloadDialog(QDialog):
         self.progress_bar.setValue(value)
 
     def download_finished(self):
+        filename = self.extract_filename_from_url(self.url)
+        if filename:
+            self.save_model_filename(filename)
         self.download_button.setEnabled(True)
         self.cancel_button.setEnabled(False)
         print("Download finished!")
+
 
 class URLInputDialog(QDialog):
     def __init__(self, parent=None):
@@ -140,5 +186,4 @@ class URLInputDialog(QDialog):
         self.setLayout(layout)
 
     def get_url(self):
-
         return self.url_text.text()

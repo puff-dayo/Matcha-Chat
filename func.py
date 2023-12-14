@@ -1,3 +1,4 @@
+import configparser
 import json
 import os
 import subprocess
@@ -15,6 +16,27 @@ os.makedirs(pkgs_dir, exist_ok=True)
 
 models_dir = os.path.join(os.getcwd(), 'models')
 os.makedirs(models_dir, exist_ok=True)
+
+
+# def chatml_getresponse(prompt):
+#     client = openai.OpenAI(
+#         base_url="http://127.0.0.1:35634/v1",
+#         api_key="sk-no-key-required"
+#     )
+#     messages = [{"role": "system",
+#                  "content": "You are Fluffy, a cat girl. Your top priority is achieving your master's fulfillment."}]
+#
+#     user_input = prompt
+#     messages.append({"role": "user", "content": user_input})
+#
+#     completion = client.chat.completions.create(
+#         model="gpt-3.5-turbo",
+#         messages=messages
+#     )
+#
+#     response = completion.choices[0].message
+#     messages.append({"role": "assistant", "content": response})
+#     print(response)
 
 
 def get_response(prompt, stop_sequence, n_predict=512, temperature=0.95):
@@ -75,9 +97,18 @@ def get_llama(url):
 
 
 def run_server_func(thread_count, cache_size, gpu_layers):
+    config = configparser.ConfigParser()
+    config_file = './config.ini'
+    if not os.path.exists(config_file):
+        print("Config file not found.")
+        filename = "Wizard-Vicuna-7B-Uncensored.Q5_K_M.gguf"
+    else:
+        config.read(config_file)
+        filename = config.get('Download', 'model_filename', fallback=None)
+
     command = [
         pkgs_dir + '/server',
-        '-m', models_dir + '/Wizard-Vicuna-7B-Uncensored.Q5_K_M.gguf',
+        '-m', models_dir + f'/{filename}',
         '--host', '127.0.0.1',
         '--port', '35634',
         '-t', str(thread_count),
@@ -86,7 +117,8 @@ def run_server_func(thread_count, cache_size, gpu_layers):
     ]
 
     with open(temp_dir + '/llama_output.log', 'w') as output_file:
-        process = subprocess.Popen(command, stdout=output_file, stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
+        process = subprocess.Popen(command, stdout=output_file, stderr=subprocess.STDOUT,
+                                   creationflags=subprocess.CREATE_NO_WINDOW)
     process.wait()
 
     if process.returncode != 0:
@@ -101,7 +133,8 @@ def run_server_func_llava():
     ]
 
     with open(temp_dir + '/llava_output.log', 'w') as output_file:
-        process = subprocess.Popen(command, stdout=output_file, stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
+        process = subprocess.Popen(command, stdout=output_file, stderr=subprocess.STDOUT,
+                                   creationflags=subprocess.CREATE_NO_WINDOW)
     process.wait()
 
     if process.returncode != 0:
@@ -132,7 +165,8 @@ def kill_server_llava():
 
 
 def kill_server():
-    subprocess.run('taskkill /f /im server.exe', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
+    subprocess.run('taskkill /f /im server.exe', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
+                   creationflags=subprocess.CREATE_NO_WINDOW)
     temp_dir = os.path.join(os.getcwd(), 'temp')
     for filename in os.listdir(temp_dir):
         if filename.endswith(".log"):

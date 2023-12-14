@@ -1,4 +1,5 @@
 import base64
+import configparser
 import json
 import os
 import sys
@@ -9,7 +10,8 @@ from PySide6.QtCore import QDateTime, QObject, Signal, Qt, QSize, QByteArray, QB
 from PySide6.QtGui import QTextCursor, QTextCharFormat, QColor, QFont, QIcon, QPalette, QImage, QImageReader
 from PySide6.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout,
                                QTextEdit, QLineEdit, QPushButton, QGroupBox,
-                               QFormLayout, QSpinBox, QLabel, QFileDialog, QMessageBox, QDoubleSpinBox, QFrame)
+                               QFormLayout, QSpinBox, QLabel, QFileDialog, QMessageBox, QDoubleSpinBox, QFrame,
+                               QComboBox)
 
 import cap_dl
 import cuda_dl
@@ -73,7 +75,7 @@ class ChatUI(QWidget):
         self.init_width = 800
         self.init_height = 600
         self.resize(self.init_width, self.init_height)
-        self.setWindowFlags(Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
+        # self.setWindowFlags(Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
 
         self.sys_prompt = ("Fluffy, the cute 16 years old maid, exudes irresistible charm with her wagging"
                            " tail, perky cat ears, and revealing outfit. She likes talking with her mistress about "
@@ -89,7 +91,7 @@ class ChatUI(QWidget):
         self.user_name = 'Mistress'
         self.ai_name = 'Fluffy'
         self.next_predict = 512
-        self.if_first = False
+        self.is_first = False
         self.llamaurl = 'https://github.com/ggerganov/llama.cpp/releases/download/b1627/llama-b1627-bin-win-openblas-x64.zip'
         self.cudallamaurl = 'https://github.com/ggerganov/llama.cpp/releases/download/b1627/llama-b1627-bin-win-cublas-cu11.7.1-x64.zip'
         self.cudakiturl = 'https://github.com/ggerganov/llama.cpp/releases/download/b1627/cudart-llama-bin-win-cu11.7.1-x64.zip'
@@ -98,9 +100,28 @@ class ChatUI(QWidget):
         self.is_to_send_image = False
         self.image_path = ""
 
+        self.filename = None
+        self.is_small = None
+        self.config_file = './config.ini'
+        self.read_config()
+
         self.init_ui()
         self.width_rem = self.width()
         self.initThread()
+
+    def read_config(self):
+        config = configparser.ConfigParser()
+
+        if not os.path.exists(self.config_file):
+            print("Config file not found.")
+            self.filename = "Wizard-Vicuna-7B-Uncensored.Q5_K_M.gguf"
+            self.is_small = "No"
+            return
+
+        config.read(self.config_file)
+
+        self.filename = config.get('Download', 'model_filename', fallback=None)
+        self.is_small = config.get('Model', 'is_chatml', fallback=None)
 
     def initThread(self):
         self.thread = MemoryMonitorThread()
@@ -133,17 +154,17 @@ class ChatUI(QWidget):
         download_button.clicked.connect(self.on_download_clicked)
         download_button.setToolTip("Save current chat history as a file.")
 
-        undo_button = QPushButton()
-        undo_button.setIcon(QIcon('./icons/undo.png'))
-        undo_button.setIconSize(QSize(24, 24))
-        undo_button.clicked.connect(self.on_undo_clicked)
-        undo_button.setToolTip("Undo last sent message.")
+        self.undo_button = QPushButton()
+        self.undo_button.setIcon(QIcon('./icons/undo.png'))
+        self.undo_button.setIconSize(QSize(24, 24))
+        self.undo_button.clicked.connect(self.on_undo_clicked)
+        self.undo_button.setToolTip("Undo last sent message.")
 
-        delete_button = QPushButton()
-        delete_button.setIcon(QIcon('./icons/delete.png'))
-        delete_button.setIconSize(QSize(24, 24))
-        delete_button.setToolTip("Clear chat history.")
-        delete_button.clicked.connect(self.clear_message)
+        self.delete_button = QPushButton()
+        self.delete_button.setIcon(QIcon('./icons/delete.png'))
+        self.delete_button.setIconSize(QSize(24, 24))
+        self.delete_button.setToolTip("Clear chat history.")
+        self.delete_button.clicked.connect(self.clear_message)
 
         settings_button = QPushButton()
         settings_button.setIcon(QIcon('./icons/settings.png'))
@@ -153,15 +174,15 @@ class ChatUI(QWidget):
 
         self.photo_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
         download_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
-        undo_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
-        delete_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
+        self.undo_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
+        self.delete_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
         settings_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
         self.chat_display.setStyleSheet("border: none; background-color: transparent;")
 
         tool_bar.addWidget(self.photo_button)
         tool_bar.addWidget(download_button)
-        tool_bar.addWidget(undo_button)
-        tool_bar.addWidget(delete_button)
+        tool_bar.addWidget(self.undo_button)
+        tool_bar.addWidget(self.delete_button)
         tool_bar.addWidget(settings_button)
         tool_bar.addStretch()
         self.ram_label = QLabel("Memory Usage", self)
@@ -209,6 +230,11 @@ class ChatUI(QWidget):
         self.button3 = QPushButton("3. Launch Llama server")
         self.button3.clicked.connect(self.start_server)
         group_layout.addRow(self.button3)
+
+        self.comboBox = QComboBox()
+        # self.load_model_files()
+        self.comboBox.currentIndexChanged.connect(self.on_model_selected)
+        group_layout.addRow(self.comboBox)
 
         label_here = QLabel('Optional downloads')
         label_here.setAlignment(Qt.AlignCenter)
@@ -314,12 +340,66 @@ class ChatUI(QWidget):
         hbox.addLayout(self.left_layout, 5)
         hbox.addWidget(self.right_frame, 2)
 
+        self.right_frame_width = self.right_frame.sizeHint().width()
+        self.comboBox.setMaximumWidth(self.right_frame_width)
+        self.load_model_files()
+
         self.setWindowTitle("Matcha Chat")
         self.setGeometry(150, 150, 800, 600)
         self.checkFile()
 
     def on_ctrl_enter_pressed(self):
         self.send_message()
+
+    def load_model_files(self):
+        model_directory = "./models"
+
+        self.comboBox.currentIndexChanged.disconnect(self.on_model_selected)
+
+        for file in os.listdir(model_directory):
+            if file.endswith(".gguf"):
+                self.comboBox.addItem(file)
+
+        config = configparser.ConfigParser()
+        config_file = './config.ini'
+
+        if not os.path.exists(config_file):
+            open(config_file, 'w').close()
+
+        config.read(config_file)
+
+        selected = config.get('Download', 'model_filename', fallback="None")
+        if selected != "None":
+            self.comboBox.setCurrentText(selected)
+
+        self.comboBox.currentIndexChanged.connect(self.on_model_selected)
+
+    def save_model_filename(self, filename):
+        config = configparser.ConfigParser()
+        config_file = './config.ini'
+
+        if not os.path.exists(config_file):
+            open(config_file, 'w').close()
+
+        config.read(config_file)
+        if 'Download' not in config.sections():
+            config.add_section('Download')
+
+        if 'Model' not in config.sections():
+            config.add_section('Model')
+
+        config.set('Download', 'model_filename', filename)
+
+        config.set('Model', 'is_chatml', 'No' if filename == "Wizard-Vicuna-7B-Uncensored.Q5_K_M.gguf" else 'Yes')
+
+        with open(config_file, 'w') as configfile:
+            config.write(configfile)
+
+    def on_model_selected(self, index):
+        selected_file = self.comboBox.itemText(index)
+        self.filename = selected_file
+        self.is_small = 'No' if selected_file == "Wizard-Vicuna-7B-Uncensored.Q5_K_M.gguf" else 'Yes'
+        self.save_model_filename(self.filename)
 
     def check_gpu(self):
         if self.detect_file('./pkgs', 'server.exe'):
@@ -385,7 +465,7 @@ class ChatUI(QWidget):
             self.chat_display.setHtml(self.previous_state["chat_history"])
             self.next_prompt = self.previous_state["next_prompt"]
             self.input_line.setText(self.previous_state["input_message"])
-            self.if_first = self.previous_state["is_first"]
+            self.is_first = self.previous_state["is_first"]
             self.is_to_send_image = self.previous_state["is_image"]
             self.image_path = self.previous_state["image_path"]
 
@@ -425,6 +505,8 @@ class ChatUI(QWidget):
         self.gpu_layer_spinbox.setReadOnly(True)
         self.setWindowTitle("Matcha Chat")
         self.button3.setEnabled(False)
+        self.comboBox.setEnabled(False)
+        self.load_if_small()
 
     def toggle_visibility(self):
         is_visible = self.sender_name_line_edit.isReadOnly()
@@ -486,8 +568,15 @@ class ChatUI(QWidget):
     def clear_message(self):
         self.ai_name = self.ai_name_line_edit.text()
         self.user_name = self.sender_name_line_edit.text()
+
         self.sys_prompt = self.system_prompt_text_edit.toPlainText()
-        self.if_first = False
+        self.is_to_send_image = False
+        self.image_path = ""
+        self.prompt = ""
+        self.next_prompt = ""
+        self.previous_state = None
+        self.is_first = False
+        print(f"WHAT The f: {self.is_first}")
         self.chat_display.setText('')
 
     def model_dler(self):
@@ -529,7 +618,7 @@ class ChatUI(QWidget):
             "chat_history": self.chat_display.toHtml(),
             "next_prompt": self.next_prompt,
             "input_message": self.input_line.toPlainText(),
-            "is_first": self.if_first,
+            "is_first": self.is_first,
             "is_image": self.is_to_send_image,
             "image_path": self.image_path,
         }
@@ -642,17 +731,28 @@ class ChatUI(QWidget):
                                       self.is_vision_enabled, self.image_path, self.thread_count_spinbox.value(),
                                       self.gpu_layer_spinbox.value(), self.content_size_spinbox.value(),
                                       self.n_pridict_spinbox.value(), self.temperature_spinbox.value(),
-                                      self.sys_prompt, self.ai_name, self.next_prompt)
+                                      self.sys_prompt, self.ai_name, self.next_prompt, self.is_small, self.user_name)
         self.work_thread.finished.connect(self.on_work_finished)
         self.work_thread.start()
 
-    def on_work_finished(self, processed_message, is_first, next_prompt):
-        print('Worker finished!')
+    def on_work_finished(self, processed_message, is_first, current_prompt):
+        print(f'Worker finished!\n Next prompt is: {current_prompt}, is_first is: {is_first}')
         self.reset_message_state()
         self.append_message(self.ai_name, processed_message.strip())
-        self.next_prompt = next_prompt
+        self.next_prompt = current_prompt
         self.update_next_prompt(processed_message)
+        print(f"is_first current {self.is_first}")
         self.is_first = is_first
+        print(f"is_first set to {self.is_first}")
+        self.work_thread.terminate()
+        self.set_buttons(True)
+        
+    def set_buttons(self, state):
+        self.send_button.setEnabled(state)
+        if self.is_vision_enabled:
+            self.photo_button.setEnabled(state)
+        self.undo_button.setEnabled(state)
+        self.delete_button.setEnabled(state)
 
     def send_message(self):
         if self.input_line.toPlainText() == "":
@@ -660,14 +760,19 @@ class ChatUI(QWidget):
         if self.button3.isEnabled():
             return
         self.save_current_state()
+        self.set_buttons(False)
         self.setWindowTitle("Matcha Chat (Generating, plz wait....)")
         message = self.input_line.toPlainText()
         custom_stop_sequence = [self.user_name + ':', self.user_name + ': ', '!(image)', '!(gif)', '!(png)']
+        if self.is_small:
+            custom_stop_sequence = [self.user_name + ':', self.user_name + ': ', '!(image)', '!(gif)', '!(png)',
+                                    'UserI', "\n"]
         self.append_message(self.user_name, message)
         self.input_line.clear()
         self.start_work_thread(message, custom_stop_sequence)
 
     def update_next_prompt(self, response_content):
+        print("\nPrompt before update: " + self.next_prompt)
         line_ending = "\n" if not response_content.endswith("\n") else ""
         self.next_prompt += response_content + line_ending + self.user_name + ":"
 
@@ -713,12 +818,29 @@ class ChatUI(QWidget):
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"An error occurred: {e}")
 
+    def load_if_small(self):
+        self.ai_name = "AI Assistant"
+        self.user_name = "User"
+        self.sys_prompt = ("AI Assistant, a highly capable and responsive entity designed to provide information, "
+                           "solve problems, and offer guidance on various topics. The AI Assistant is adept at "
+                           "understanding and responding to a wide range of queries, from simple factual "
+                           "questions to more complex requests for advice or analysis. The user approaches the AI "
+                           "Assistant with questions, tasks, or topics they need assistance with, and the AI "
+                           "Assistant responds in a helpful, informative manner.\nHere is a transcript of a "
+                           "never-ending text dialog, where User interacts with the AI Assistant.\nAI Assistant: "
+                           "Hi, I am AI Assistant. I am ready to help you with any problem or question.\nUser:")
+        self.ai_name_line_edit.setText(self.ai_name)
+        self.sender_name_line_edit.setText(self.user_name)
+        self.system_prompt_text_edit.setText(self.sys_prompt)
+        self.n_pridict_spinbox.setValue(96)
+        self.temperature_spinbox.setValue(0.40)
+
 
 class WorkThread(QThread):
     finished = Signal(str, bool, str)
 
-    def __init__(self, message, custom_stop_sequence, is_to_send_image, if_first, is_vision_enabled, image_path,
-                 thread, gpu, content, predict, temp, sys_pr, ai_name, next_pr, parent=None):
+    def __init__(self, message, custom_stop_sequence, is_to_send_image, is_first, is_vision_enabled, image_path,
+                 thread, gpu, content, predict, temp, sys_pr, ai_name, next_pr, chatml, username, parent=None):
         super().__init__(parent)
         self.current_prompt = None
         self.next_prompt = next_pr
@@ -727,7 +849,7 @@ class WorkThread(QThread):
         self.is_to_send_image = is_to_send_image
         self.message = message
         self.custom_stop_sequence = custom_stop_sequence
-        self.if_first = if_first
+        self.is_first = is_first
         self.is_vision_enabled = is_vision_enabled
         self.image_path = image_path
         self.thread = thread
@@ -735,6 +857,8 @@ class WorkThread(QThread):
         self.temp = temp
         self.sys_prompt = sys_pr
         self.ai_name = ai_name
+        self.is_chatml = chatml
+        self.user_name = username
 
     def check_log_file(self, file):
         if not os.path.exists(os.path.join(os.getcwd(), 'temp') + f"/{file}_output.log"):
@@ -772,16 +896,26 @@ class WorkThread(QThread):
 
     def update_prompt_and_send_message(self, message, custom_stop_sequence):
         self.current_prompt = self.construct_prompt(message)
-        print('Prompt:', self.current_prompt)
+
+        print('\nPrompt:', self.current_prompt)
+
         response_content = func.get_response(self.current_prompt, custom_stop_sequence,
                                              self.predict, self.temp)
         return response_content
 
     def construct_prompt(self, message):
-        if not self.if_first:
-            self.if_first = True
+        if not self.is_first:
+            self.is_first = True
             return self.sys_prompt + message + '\n' + self.ai_name + ':'
-        return self.next_prompt + message + '\n' + self.ai_name + ':'
+        else:
+            return self.next_prompt + message + '\n' + self.ai_name + ':'
+
+    def split_sys_prompt(self, sys_prompt):
+        separator = f"\n{self.ai_name}:"
+        parts = sys_prompt.split(separator)
+        part1 = parts[0]
+        part2 = parts[1].split("\n")[0] if len(parts) > 1 else ""
+        return part1, part2
 
     def run(self):
         if self.is_to_send_image:
@@ -789,7 +923,8 @@ class WorkThread(QThread):
             self.message = self.handle_image_processing(self.message)
             print("Image:" + self.message)
         processed_message = self.update_prompt_and_send_message(self.message, self.custom_stop_sequence)
-        self.finished.emit(processed_message, self.if_first, self.current_prompt)
+        self.finished.emit(processed_message, self.is_first, self.current_prompt)
+        print("\nNow curretn is\n" + self.current_prompt)
 
 
 def on_close():
