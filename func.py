@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import threading
+import time
 import zipfile
 
 import requests
@@ -119,4 +120,19 @@ def run_server_llava():
     server_thread.start()
 
 def kill_server_llava():
-    os.system('taskkill /f /im llava-v1.5-7b-q4-server.llamafile.exe')
+    subprocess.run('taskkill /f /im llava-v1.5-7b-q4-server.llamafile.exe', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    temp_dir = os.path.join(os.getcwd(), 'temp')
+    time.sleep(3)
+    for filename in os.listdir(temp_dir):
+        if filename.endswith(".log"):
+            file_path = os.path.join(temp_dir, filename)
+            os.remove(file_path)
+
+def kill_server():
+    subprocess.run('taskkill /f /im server.exe', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    temp_dir = os.path.join(os.getcwd(), 'temp')
+    for filename in os.listdir(temp_dir):
+        if filename.endswith(".log"):
+            file_path = os.path.join(temp_dir, filename)
+            os.remove(file_path)
+

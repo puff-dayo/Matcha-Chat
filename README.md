@@ -2,30 +2,43 @@
 
 <img src="https://github.com/puff-dayo/matcha-chat/assets/84665734/5401d53a-2265-4038-a812-e9c2bd28afa4" width="64" />
 
+
+
 ## Introduction
 
 **Matcha Chat** is a **GUI** chat app for **Windows OS** designed to chat with a **local language model AI**, built with a [Python](https://www.python.org/) backend and a [Pyside](https://pypi.org/project/PySide6/) front end.
 
-The app interface allows for **easy** clicks installation of [llama.cpp](https://github.com/ggerganov/llama.cpp) , [Wizard Vicuna](https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF) and vision ability from [llava-v1.5-7b-q4](https://huggingface.co/jartine/llava-v1.5-7B-GGUF/), message sending, system configuration, and management of character cards.
+The app interface allows for **easy** clicks installation of [llama.cpp](https://github.com/ggerganov/llama.cpp) , [Wizard Vicuna](https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF) and **visual ability** from [llava](https://huggingface.co/jartine/llava-v1.5-7B-GGUF/), with message sending, system configuration, and management of character cards.
 
 **How to update: simply replace the .exe file.**
 
+
+
 ## Features
 
-- **Easy-to-use chat interface**: A simple and intuitive chat interface.
-- **Clicks installation**: Download essential files and start a chat with just some pushes of button. Configure settings easily.
-- **Character management**: Load and save character cards(json) for personalized chat experiences. 
+- **Easy-to-use installation**: Download essential files and start a chat with just some pushes of button. Configure settings easily.
+- **Character management**: Load and save character cards(json). 
 - **Hardware acceration support**: Choose between openBLAS and cuBLAS.
-- **Highly efficient**: The GUI component of the software is consuming only ~64MB of RAM, representing a significant resource saving compared to running a web UI in Chrome, allowing even devices with 8GB of RAM to run text models quantized to 5-bit.
-- **Vision ability**: Send images into your llama chat.
+- **Highly efficient**: The GUI component of the software is consuming only ~64MB of RAM, which is a significant resource saving compared to a web UI running in Chrome.
+- **Vision ability**: ✨Send images into your chat with AI✨.
 
-![1700484685905](https://github.com/puff-dayo/Matcha-Chat/assets/84665734/e998b24f-46f3-4d67-9ab7-ee70c1ba6659)
+[an image here]
+
+
 
 ## Installation Guide
 
+--- Hardware requirements ---
+
+Devices with <u>8GB of installed RAM</u> can run in text-only mode.
+
+Devices with <u>8GB of spare RAM</u> can chat with images.
+
+More than 8GB of VRAM is required to use GPU acceleration
+
 ### Step 1: Get the executable
 
-Download the built binary executable file for x64 Windows OS from [Release](https://github.com/puff-dayo/matcha-chat/releases/).
+Download the built binary executable file for x64 Windows OS from [Release](https://github.com/puff-dayo/matcha-chat/releases/), and place it in an empty folder.
 
 ### Step 2: The first click
 
@@ -37,17 +50,11 @@ Download the built binary executable file for x64 Windows OS from [Release](http
 
 Click on the upper button "*1. Download llama.cpp*" to install Llama.cpp with openBLAS support.
 
-At least 4GB of free memory for the recommended configuration.
-
 #### GPU Acceleration
 
-Directly click on the button "*1. Enable GPU acceleration*" located below the buttons, instead of the upper one,to install Llama with cuBLAS support.
+Directly click on the button "*Enable GPU acceleration*" located below the buttons, instead of the upper one,to install Llama with cuBLAS support.
 
-It is recommended to have at least 4GB of free BRAM and 4GB of VRAM available.
-
-Before lauching the llama.cp service, make sure to set the number of layers to be loaded into the GPU (default is 10).
-
-Note: Generally, a modern graphics card is required to achieve better performance than CPU acceleration.
+Before lauching the llama.cpp service, make sure to set the number of layers to be loaded into the GPU (default is 0).
 
 ### Step 3: The second click
 
@@ -60,7 +67,7 @@ After completing the installation with step 2, proceed with the following steps:
 
 
 
-NOTE: Once you have configured all three stpes, you only need to press "*3. Launch Llama server*" to start the llama for future chats.
+Once you have configured all three stpes, you only need to press "*3. Launch Llama server*" to start the llama every time you run it.
 
 
 
@@ -78,8 +85,8 @@ Navigate to the cloned directory and install the required packages, then lauch t
 
 ```bash
 pip install -r requirements.txt
-python gui.py
-# or py gui.py if you are using powershell
+python matcha_gui.py
+# or py matcha-gui.py if you are using Powershell
 ```
 
 ### Compile your own binary file....
@@ -87,5 +94,5 @@ python gui.py
 If you like to~
 
 ```bash
-nuitka --onefile --disable-console --plugin-enable=pyside6 --windows-icon-from-ico=PATH-TO-ICON gui.py
+nuitka --onefile --disable-console --plugin-enable=pyside6 --windows-icon-from-ico=PATH-TO-ICON matcha_gui.py
 ```

@@ -25,7 +25,7 @@ def get_caption(image_path):
             "prompt": "A chat between a curious human and an artificial intelligence assistant. The assistant gives "
                       "helpful and detailed answers to the human's questions.\nUSER:[img-10]Describe everything "
                       "in this image as an alt text for blind people. If there are human characters exist, describe the"
-                      "characters and their face expression, outfit, posture and features in detail.\nASSISTANT:"}
+                      "characters and their face expression, outfit, posture, age and features in detail.\nASSISTANT:"}
 
     json_data = json.dumps(data)
 
