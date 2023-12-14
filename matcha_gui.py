@@ -239,7 +239,7 @@ class ChatUI(QWidget):
         label_here = QLabel('Optional downloads')
         label_here.setAlignment(Qt.AlignCenter)
         group_layout.addRow(label_here)
-        self.button4 = QPushButton("Use GPU (SLOW!)")
+        self.button4 = QPushButton("Use GPU")
         self.button4.clicked.connect(self.check_gpu)
         group_layout.addRow(self.button4)
         self.buttonC = QPushButton("Enable vision ability")
