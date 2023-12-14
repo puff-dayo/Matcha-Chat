@@ -77,13 +77,13 @@ Once you have configured all three stpes, you only need to press "*3. Launch Lla
 
 Before running Matcha Chat, ensure you have Python installed. Clone the repository to your local machine:
 
-```bash
+```powershell
 git clone https://github.com/puff-dayo/Matcha-Chat.git
 ```
 
 Navigate to the cloned directory and install the required packages, then lauch the GUI:
 
-```bash
+```powershell
 pip install -r requirements.txt
 python matcha_gui.py
 # or py matcha-gui.py if you are using Powershell
@@ -93,6 +93,6 @@ python matcha_gui.py
 
 If you like to~
 
-```bash
+```powershell
 nuitka --onefile --disable-console --plugin-enable=pyside6 --windows-icon-from-ico=PATH-TO-ICON matcha_gui.py
 ```
