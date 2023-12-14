@@ -86,7 +86,7 @@ def run_server_func(thread_count, cache_size, gpu_layers):
     ]
 
     with open(temp_dir + '/llama_output.log', 'w') as output_file:
-        process = subprocess.Popen(command, stdout=output_file, stderr=subprocess.STDOUT)
+        process = subprocess.Popen(command, stdout=output_file, stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
     process.wait()
 
     if process.returncode != 0:
@@ -101,7 +101,7 @@ def run_server_func_llava():
     ]
 
     with open(temp_dir + '/llava_output.log', 'w') as output_file:
-        process = subprocess.Popen(command, stdout=output_file, stderr=subprocess.STDOUT)
+        process = subprocess.Popen(command, stdout=output_file, stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
     process.wait()
 
     if process.returncode != 0:
@@ -119,8 +119,10 @@ def run_server_llava():
     server_thread.daemon = True
     server_thread.start()
 
+
 def kill_server_llava():
-    subprocess.run('taskkill /f /im llava-v1.5-7b-q4-server.llamafile.exe', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    subprocess.run('taskkill /f /im llava-v1.5-7b-q4-server.llamafile.exe', shell=True, stdout=subprocess.DEVNULL,
+                   stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
     temp_dir = os.path.join(os.getcwd(), 'temp')
     time.sleep(3)
     for filename in os.listdir(temp_dir):
@@ -128,11 +130,11 @@ def kill_server_llava():
             file_path = os.path.join(temp_dir, filename)
             os.remove(file_path)
 
+
 def kill_server():
-    subprocess.run('taskkill /f /im server.exe', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    subprocess.run('taskkill /f /im server.exe', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
     temp_dir = os.path.join(os.getcwd(), 'temp')
     for filename in os.listdir(temp_dir):
         if filename.endswith(".log"):
             file_path = os.path.join(temp_dir, filename)
             os.remove(file_path)
-
