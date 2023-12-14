@@ -95,5 +95,5 @@ python matcha_gui.py
 If you like to~
 
 ```powershell
-nuitka --onefile --disable-console --plugin-enable=pyside6 --windows-icon-from-ico=PATH-TO-ICON matcha_gui.py
+nuitka --onefile --disable-console --plugin-enable=pyside6 --windows-icon-from-ico=icon.ico --include-data-dir=icons=icons --include-data-files=icon.png=icon.png --include-data-files=icon.ico=icon.ico matcha_gui.py
 ```
