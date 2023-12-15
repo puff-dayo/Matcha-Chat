@@ -1,8 +1,6 @@
 import base64
 import configparser
 import json
-import os
-import sys
 import time
 
 import psutil
@@ -19,6 +17,9 @@ import func
 import llama_dl
 import llava_service
 import model_dl
+
+import os
+import sys
 
 
 class ParameterController(QObject):
@@ -64,6 +65,26 @@ class ChatUI(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.ai_name2 = "AI Assistant"
+        self.user_name2 = "User"
+        self.sys_prompt2 = ("AI Assistant, a highly capable and responsive entity designed to provide information, "
+                            "solve problems, and offer guidance on various topics. The AI Assistant is adept at "
+                            "understanding and responding to a wide range of queries, from simple factual "
+                            "questions to more complex requests for advice or analysis. The user approaches the AI "
+                            "Assistant with questions, tasks, or topics they need assistance with, and the AI "
+                            "Assistant responds in a helpful, informative manner.\nHere is a transcript of a "
+                            "never-ending text dialog, where User interacts with the AI Assistant.\nAI Assistant: "
+                            "Hi, I am AI Assistant. I am ready to help you with any problem or question.\nUser:")
+        self.temp3 = ("Fluffy, the cute 16 years old maid, exudes irresistible charm with her wagging"
+                      " tail, perky cat ears, and revealing outfit. She likes talking with her mistress about "
+                      "everything. She showers her mistress with affection through gentle rubs, "
+                      "purrs of contentment, and erotic pleasure. She brings joy and companionship, "
+                      "forever cherished by her adoring mistress.\nPairs of parentheses are used to indicate "
+                      "actions.\nHere is a transcript of a never ending text dialog, where Mistress interacts "
+                      "with her girl Fluffy.\nFluffy:Welcome home, my mistress. (lifts her "
+                      "mini-skirt)\nMistress:")
+        self.temp2 = 'Mistress'
+        self.temp1 = 'Fluffy'
         self.is_first = False
         self.left_size = ""
         temp_dir = os.path.join(os.getcwd(), 'temp')
@@ -121,7 +142,7 @@ class ChatUI(QWidget):
         config.read(self.config_file)
 
         self.filename = config.get('Download', 'model_filename', fallback=None)
-        self.is_small = config.get('Model', 'is_chatml', fallback=None)
+        self.is_small = config.get('Model', 'is_small', fallback=None)
 
     def initThread(self):
         self.thread = MemoryMonitorThread()
@@ -143,7 +164,7 @@ class ChatUI(QWidget):
         tool_bar = QHBoxLayout()
 
         self.photo_button = QPushButton()
-        self.photo_button.setIcon(QIcon('./icons/photo.png'))
+        self.photo_button.setIcon(QIcon(os.path.join('icons', 'photo.png')))
         self.photo_button.setIconSize(QSize(24, 24))
         self.photo_button.clicked.connect(self.on_photo_clicked)
         self.photo_button.setToolTip("Send an image into chat.")
@@ -390,7 +411,7 @@ class ChatUI(QWidget):
 
         config.set('Download', 'model_filename', filename)
 
-        config.set('Model', 'is_chatml', 'No' if filename == "Wizard-Vicuna-7B-Uncensored.Q5_K_M.gguf" else 'Yes')
+        config.set('Model', 'is_small', 'No' if filename == "Wizard-Vicuna-7B-Uncensored.Q5_K_M.gguf" else 'Yes')
 
         with open(config_file, 'w') as configfile:
             config.write(configfile)
@@ -400,6 +421,17 @@ class ChatUI(QWidget):
         self.filename = selected_file
         self.is_small = 'No' if selected_file == "Wizard-Vicuna-7B-Uncensored.Q5_K_M.gguf" else 'Yes'
         self.save_model_filename(self.filename)
+        if self.is_small == 'Yes':
+            self.load_if_small()
+        else:
+            self.ai_name = self.temp1
+            self.user_name = self.temp2
+            self.sys_prompt = self.temp3
+            self.ai_name_line_edit.setText(self.ai_name)
+            self.sender_name_line_edit.setText(self.user_name)
+            self.system_prompt_text_edit.setText(self.sys_prompt)
+            self.n_pridict_spinbox.setValue(512)
+            self.temperature_spinbox.setValue(0.95)
 
     def check_gpu(self):
         if self.detect_file('./pkgs', 'server.exe'):
@@ -506,7 +538,6 @@ class ChatUI(QWidget):
         self.setWindowTitle("Matcha Chat")
         self.button3.setEnabled(False)
         self.comboBox.setEnabled(False)
-        self.load_if_small()
 
     def toggle_visibility(self):
         is_visible = self.sender_name_line_edit.isReadOnly()
@@ -746,7 +777,7 @@ class ChatUI(QWidget):
         print(f"is_first set to {self.is_first}")
         self.work_thread.terminate()
         self.set_buttons(True)
-        
+
     def set_buttons(self, state):
         self.send_button.setEnabled(state)
         if self.is_vision_enabled:
@@ -819,16 +850,9 @@ class ChatUI(QWidget):
                 QMessageBox.critical(self, "Error", f"An error occurred: {e}")
 
     def load_if_small(self):
-        self.ai_name = "AI Assistant"
-        self.user_name = "User"
-        self.sys_prompt = ("AI Assistant, a highly capable and responsive entity designed to provide information, "
-                           "solve problems, and offer guidance on various topics. The AI Assistant is adept at "
-                           "understanding and responding to a wide range of queries, from simple factual "
-                           "questions to more complex requests for advice or analysis. The user approaches the AI "
-                           "Assistant with questions, tasks, or topics they need assistance with, and the AI "
-                           "Assistant responds in a helpful, informative manner.\nHere is a transcript of a "
-                           "never-ending text dialog, where User interacts with the AI Assistant.\nAI Assistant: "
-                           "Hi, I am AI Assistant. I am ready to help you with any problem or question.\nUser:")
+        self.ai_name = self.ai_name2
+        self.user_name = self.user_name2
+        self.sys_prompt = self.sys_prompt2
         self.ai_name_line_edit.setText(self.ai_name)
         self.sender_name_line_edit.setText(self.user_name)
         self.system_prompt_text_edit.setText(self.sys_prompt)
