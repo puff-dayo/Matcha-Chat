@@ -8,7 +8,7 @@
 
 **Matcha Chat** is a **GUI** chat app for **Windows OS** designed to chat with a **local language model AI**, built with a [Python](https://www.python.org/) backend and a [Pyside](https://pypi.org/project/PySide6/) front end.
 
-The app interface allows for **easy** clicks installation of [llama.cpp](https://github.com/ggerganov/llama.cpp) , [Wizard Vicuna](https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF) and **visual ability** from [llava](https://huggingface.co/jartine/llava-v1.5-7B-GGUF/), with message sending, system configuration, and management of character cards.
+The app interface allows for **easy** clicks installation of [llama.cpp](https://github.com/ggerganov/llama.cpp) , [Wizard Vicuna](https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF)/[Stablelm Zephyr](https://huggingface.co/TheBloke/stablelm-zephyr-3b-GGUF/)/[TinyLlama Chat](https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v0.3-GGUF/) and **visual ability** from [llava](https://huggingface.co/jartine/llava-v1.5-7B-GGUF/), with message sending, system configuration, and management of character cards.
 
 **How to update: simply replace the .exe file.**
 
@@ -31,11 +31,11 @@ The app interface allows for **easy** clicks installation of [llama.cpp](https:/
 
 --- Hardware requirements ---
 
-Devices with <u>8GB of installed RAM</u> can run in text-only mode.
+Devices with <u>2/4/8GB of installed RAM</u> can run in text-only mode for a 1B/3B/7B model.
 
-Devices with <u>8GB of spare RAM</u> can chat with images.
+You need an additional <u>4GB of spare RAM</u> to chat with images.
 
-More than 8GB of VRAM is required to use GPU acceleration
+Really much VRAM is required to use GPU acceleration. Dont't enable that if your PC is **strong**.
 
 ### Step 1: Get the executable
 
