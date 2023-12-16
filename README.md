@@ -8,7 +8,7 @@
 
 **Matcha Chat** is a **GUI** chat app for **Windows OS** designed to chat with a **local language model AI**, built with a [Python](https://www.python.org/) backend and a [Pyside](https://pypi.org/project/PySide6/) front end.
 
-The app interface allows for **easy** clicks installation of [llama.cpp](https://github.com/ggerganov/llama.cpp) , [Wizard Vicuna](https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF)/[Stablelm Zephyr](https://huggingface.co/TheBloke/stablelm-zephyr-3b-GGUF/)/[TinyLlama Chat](https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v0.3-GGUF/) and **visual ability** from [llava](https://huggingface.co/jartine/llava-v1.5-7B-GGUF/), with message sending, system configuration, and management of character cards.
+The app interface allows for **easy** clicks installation of [llama.cpp](https://github.com/ggerganov/llama.cpp) , [Wizard Vicuna](https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF)/[Stablelm Zephyr](https://huggingface.co/TheBloke/stablelm-zephyr-3b-GGUF/)/[TinyLlama Chat](https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v0.3-GGUF/) and **visual ability** from [llava](https://huggingface.co/jartine/llava-v1.5-7B-GGUF/), with message sending, system configuration, [whisper](https://github.com/ggerganov/whisper.cpp/) voice input and management of character cards.
 
 **How to update: simply replace the .exe file.**
 
@@ -21,10 +21,13 @@ The app interface allows for **easy** clicks installation of [llama.cpp](https:/
 - **Hardware acceration support**: Choose between openBLAS and cuBLAS.
 - **Highly efficient**: The GUI component of the software is consuming only ~64MB of RAM, which is a significant resource saving compared to a web UI running in Chrome.
 - **Vision ability**: ✨Send images into your chat with AI✨.
+- **Voice input**：✨Speak your own language in your voice with auto translation to English✨.
 
-<img src="https://github.com/puff-dayo/Matcha-Chat/assets/84665734/ab0c23cb-0303-496d-995b-497308c83a70"/>
+❤️ All data stores and computes on your local machine, powered by multiple AI models.
 
+<img src="https://github.com/puff-dayo/Matcha-Chat/assets/84665734/42b3c95f-3343-479d-81a7-174dc16a2c99"/>
 
+(Left: Tiny Llama - Chat, 1.1B q4_K_M)
 
 
 ## Installation Guide
