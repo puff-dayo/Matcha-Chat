@@ -129,7 +129,8 @@ def run_server_func_llava():
     command = [
         models_dir + '/llava-v1.5-7b-q4-server.llamafile',
         '--port', '17186',
-        '--nobrowser'
+        '--nobrowser',
+        '-t', str(os.cpu_count())
     ]
 
     with open(temp_dir + '/llava_output.log', 'w') as output_file:
@@ -154,8 +155,10 @@ def run_server_llava():
 
 
 def kill_server_llava():
-    subprocess.run('taskkill /f /im llava-v1.5-7b-q4-server.llamafile.exe', shell=True, stdout=subprocess.DEVNULL,
-                   stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
+    subprocess.run(['taskkill', '/f', '/im', 'llava-v1.5-7b-q4-server.llamafile.exe'],
+                   stdout=subprocess.DEVNULL,
+                   stderr=subprocess.PIPE,
+                   creationflags=subprocess.CREATE_NO_WINDOW)
     temp_dir = os.path.join(os.getcwd(), 'temp')
     time.sleep(3)
     for filename in os.listdir(temp_dir):
@@ -165,7 +168,9 @@ def kill_server_llava():
 
 
 def kill_server():
-    subprocess.run('taskkill /f /im server.exe', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
+    subprocess.run(['taskkill', '/f', '/im', 'server.exe'],
+                   stdout=subprocess.DEVNULL,
+                   stderr=subprocess.PIPE,
                    creationflags=subprocess.CREATE_NO_WINDOW)
     temp_dir = os.path.join(os.getcwd(), 'temp')
     for filename in os.listdir(temp_dir):

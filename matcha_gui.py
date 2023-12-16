@@ -1,10 +1,16 @@
 import base64
 import configparser
 import json
+import os
+import subprocess
+import sys
+import threading
 import time
+import wave
 
 import psutil
-from PySide6.QtCore import QDateTime, QObject, Signal, Qt, QSize, QByteArray, QBuffer, QThread
+import pyaudio
+from PySide6.QtCore import QDateTime, QObject, Signal, Qt, QSize, QByteArray, QBuffer, QThread, QMimeData
 from PySide6.QtGui import QTextCursor, QTextCharFormat, QColor, QFont, QIcon, QPalette, QImage, QImageReader
 from PySide6.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout,
                                QTextEdit, QLineEdit, QPushButton, QGroupBox,
@@ -17,9 +23,7 @@ import func
 import llama_dl
 import llava_service
 import model_dl
-
-import os
-import sys
+import voice_dl
 
 
 class ParameterController(QObject):
@@ -42,15 +46,24 @@ class MemoryMonitorThread(QThread):
             total_memory = 0
             for process in psutil.process_iter(attrs=['name', 'memory_info']):
                 process_info = process.as_dict(attrs=['name', 'memory_info'])
-                if process_info['name'] in ['llava-v1.5-7b-q4-server.llamafile.exe', 'server.exe', 'matcha_gui.exe']:
+                if process_info['name'] in ['llava-v1.5-7b-q4-server.llamafile.exe', 'server.exe',
+                                            'main.exe', 'matcha_gui.exe']:
                     total_memory += process_info['memory_info'].rss
             available_memory_gb = psutil.virtual_memory().available / (1024 * 1024 * 1024)
-            memory_usage_str = f"Memory: Using {total_memory / (1024 * 1024 * 1024):.2f}GB, Available {available_memory_gb:.2f}GB "
-            self.update_signal.emit(memory_usage_str)
+            memory_usage_str = f"Using {total_memory / (1024 * 1024 * 1024):.1f}GB/{available_memory_gb:.1f}GB Free"
+
+            cpu_usage = psutil.cpu_percent(interval=1)
+            cpu_usage_str = f"{cpu_usage}"
+
+            status_str = f"<font color='#969696'>CPU:</font> {cpu_usage_str}% <font color='#969696'>RAM:</font> {memory_usage_str}"
+            self.update_signal.emit(status_str)
+
             self.sleep(1)
 
 
 class CustomTextEdit(QTextEdit):
+    image_found = Signal(str)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -58,6 +71,66 @@ class CustomTextEdit(QTextEdit):
         super().keyPressEvent(event)
         if event.key() == Qt.Key_Return and event.modifiers() & Qt.ControlModifier:
             self.parent().on_ctrl_enter_pressed()
+
+    def moveCursorToEnd(self):
+        self.moveCursor(QTextCursor.End)
+
+    def insertFromMimeData(self, source: QMimeData):
+        if source.hasImage():
+            temp_dir = './temp'
+            os.makedirs(temp_dir, exist_ok=True)
+            image_path = os.path.join(temp_dir, 'temp_image.jpg')
+
+            image = source.imageData()
+            if isinstance(image, QImage):
+                image.save(image_path, 'JPEG')
+                self.image_found.emit(image_path)
+        if source.hasText():
+            plain_text = source.text()
+            self.insertPlainText(plain_text)
+        else:
+            super().insertFromMimeData(source)
+
+
+class get_transcribe_worker(QObject):
+    finished = Signal(str)
+
+    def run(self):
+        try:
+            cores = str(os.cpu_count())
+            whisper_dir = os.path.join(os.getcwd(), 'whisper')
+            temp_dir = os.path.join(os.getcwd(), 'temp')
+            command = [
+                whisper_dir + '/main',
+                '-m', whisper_dir + '/ggml-large-v3-q5_0.bin',
+                '-t', cores,
+                '-f', temp_dir + '/rec.wav',
+                '-l', 'auto',
+                '-oj',
+                '-ng',
+                '-tr',
+                '-of', temp_dir + '/transcribe_output'
+            ]
+            process = subprocess.run(command, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                     creationflags=subprocess.CREATE_NO_WINDOW)
+
+            if process.returncode == 0:
+                print("Command executed successfully.")
+
+                try:
+                    with open(os.path.join(os.getcwd(), 'temp') + '/transcribe_output.json', 'r',
+                              encoding='utf-8') as file:
+                        data = json.load(file)
+                    texts = [item['text'].strip() for item in data.get('transcription', [])]
+                    combined_text = ' '.join(texts) + ''
+                    self.finished.emit(combined_text)
+                except Exception as e:
+                    print("Error in handling result:", process.stderr)
+            else:
+                print("Error in executing command:", process.stderr)
+
+        except Exception as e:
+            print("An error occurred:", str(e))
 
 
 class ChatUI(QWidget):
@@ -126,9 +199,32 @@ class ChatUI(QWidget):
         self.config_file = './config.ini'
         self.read_config()
 
+        self.chunk = 1024
+        self.format = pyaudio.paInt16
+        self.channels = 1
+        self.rate = 16000
+        self.recording = False
+        self.p = pyaudio.PyAudio()
+
+        self.whispercpp = "https://github.com/ggerganov/whisper.cpp/releases/download/v1.5.1/whisper-blas-bin-x64.zip"
+        self.whispermodel = 'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-q5_0.bin?download=true'
+
         self.init_ui()
         self.width_rem = self.width()
         self.initThread()
+
+        self.voice_worker = get_transcribe_worker()
+        self.voice_worker_thread = threading.Thread(target=self.voice_worker.run)
+        self.voice_worker.finished.connect(self.handle_voice)
+
+    def on_image_found(self, file_path):
+        self.is_to_send_image = True
+        self.image_path = file_path
+        image = QImage(file_path)
+        self.photo_button.setIcon(QIcon('./icons/photo_hover.png'))
+        if image.isNull():
+            self.photo_button.setIcon(QIcon('./icons/photo.png'))
+            return
 
     def read_config(self):
         config = configparser.ConfigParser()
@@ -215,18 +311,26 @@ class ChatUI(QWidget):
         self.input_line.setMinimumHeight(50)
         self.input_line.setMaximumHeight(100)
         self.input_line.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.input_line.image_found.connect(self.on_image_found)
         self.left_layout.addWidget(self.input_line)
 
         button_layout = QHBoxLayout()
         button_layout.addStretch()
+        self.record_button = QPushButton('Voice', self)
+        self.record_button.setFixedWidth(80)
+        self.record_button.clicked.connect(self.toggle_recording)
+        self.record_button.setEnabled(False)
+
         self.send_button = QPushButton("Send")
         self.send_button.setFixedWidth(80)
         self.send_button.clicked.connect(self.send_message)
         self.send_button.setEnabled(False)
         clear_button = QPushButton("Clear")
         clear_button.setFixedWidth(80)
-        button_layout.addWidget(QLabel('Use Ctrl+Enter to send'))
+        tip_tex = "<font color='#969696'>Use Ctrl+Enter to send</font>"
+        button_layout.addWidget(QLabel(tip_tex))
         button_layout.addWidget(clear_button)
+        button_layout.addWidget(self.record_button)
         button_layout.addWidget(self.send_button)
         clear_button.clicked.connect(self.clear_message)
 
@@ -266,6 +370,9 @@ class ChatUI(QWidget):
         self.buttonC = QPushButton("Enable vision ability")
         self.buttonC.clicked.connect(self.check_vision)
         group_layout.addRow(self.buttonC)
+        self.buttonV = QPushButton("Enable voice input")
+        group_layout.addRow(self.buttonV)
+        self.buttonV.clicked.connect(self.check_voice)
 
         group_box.setLayout(group_layout)
         self.right_layout.addWidget(group_box)
@@ -364,10 +471,79 @@ class ChatUI(QWidget):
         self.right_frame_width = self.right_frame.sizeHint().width()
         self.comboBox.setMaximumWidth(self.right_frame_width)
         self.load_model_files()
+        self.on_model_selected(self.comboBox.currentIndex())
 
         self.setWindowTitle("Matcha Chat")
         self.setGeometry(150, 150, 800, 600)
         self.checkFile()
+
+    def check_voice(self):
+        if not self.detect_file('./models', 'ggml-large-v3-q5_0.bin'):
+            self.buttonV.setText("Enable voice input")
+            self.voice_dler()
+            self.checkFile()
+        else:
+            self.buttonV.setText('Enabled voice input[√]')
+            self.record_button.setEnabled(True)
+            self.checkFile()
+
+    def voice_dler(self):
+        voice_dl.DownloadDialog(urls=[self.whispercpp, self.whispermodel],
+                                dests=["whisper-blas-bin-x64.zip",
+                                       "ggml-large-v3-q5_0.bin"]).exec()
+        self.checkFile()
+
+    def toggle_recording(self):
+        if self.recording:
+            self.stop_recording()
+            self.record_button.setText('Processing')
+            self.record_button.setEnabled(False)
+        else:
+            self.start_recording()
+            self.record_button.setText('Finish')
+
+    def start_recording(self):
+        self.recording = True
+        self.stream = self.p.open(format=self.format, channels=self.channels,
+                                  rate=self.rate, input=True,
+                                  frames_per_buffer=self.chunk)
+        self.frames = []
+
+        def record():
+            while self.recording:
+                data = self.stream.read(self.chunk)
+                self.frames.append(data)
+
+        self.record_thread = threading.Thread(target=record)
+        self.record_thread.start()
+
+    def stop_recording(self):
+        self.recording = False
+        self.record_thread.join()
+        self.stream.stop_stream()
+        self.stream.close()
+
+        self.save_wave()
+        self.record_button.setText('Processing')
+
+        self.voice_worker_thread = threading.Thread(target=self.voice_worker.run)
+        self.voice_worker_thread.start()
+
+    def handle_voice(self, result):
+        self.input_line.setText(self.input_line.toPlainText() + result)
+        self.record_button.setText('Record')
+        self.record_button.setEnabled(True)
+        self.input_line.moveCursorToEnd()
+
+    def save_wave(self):
+        wf = wave.open('./temp/rec.wav', 'wb')
+        wf.setnchannels(self.channels)
+        wf.setsampwidth(self.p.get_sample_size(self.format))
+        wf.setframerate(self.rate)
+        wf.writeframes(b''.join(self.frames))
+        wf.close()
+
+        self.frames = []
 
     def on_ctrl_enter_pressed(self):
         self.send_message()
@@ -499,6 +675,8 @@ class ChatUI(QWidget):
             self.input_line.setText(self.previous_state["input_message"])
             self.is_first = self.previous_state["is_first"]
             self.is_to_send_image = self.previous_state["is_image"]
+            if self.is_to_send_image:
+                self.photo_button.setIcon(QIcon('./icons/photo_hover.png'))
             self.image_path = self.previous_state["image_path"]
 
     def toggle_settings(self):
@@ -526,7 +704,7 @@ class ChatUI(QWidget):
             pass
 
     def start_server(self):
-        self.setWindowTitle("Matcha Chat (Launching, plz wait....)")
+        self.setWindowTitle("Matcha Chat (Launching, plz wait.)")
         func.run_server(self.thread_count_spinbox.value(), self.content_size_spinbox.value(),
                         self.gpu_layer_spinbox.value())
         self.wait_for_log_message('llama')
@@ -595,6 +773,9 @@ class ChatUI(QWidget):
         if self.detect_file('./models', 'llava-v1.5-7b-q4-server.llamafile.exe'):
             self.buttonC.setText('Enabled vision ability[√]')
             self.is_vision_enabled = True
+        if self.detect_file('./whisper', 'ggml-large-v3-q5_0.bin'):
+            self.buttonV.setText("Enabled voice input[√]")
+            self.record_button.setEnabled(True)
 
     def clear_message(self):
         self.ai_name = self.ai_name_line_edit.text()
@@ -681,7 +862,7 @@ class ChatUI(QWidget):
     #     self.save_current_state()
     #     message = self.input_line.toPlainText()
     #     custom_stop_sequence = [self.user_name + ':', self.user_name + ': ', '!(image)', '!(gif)', '!(png)']
-    #     self.setWindowTitle("Matcha Chat (Generating, plz wait....)")
+    #     self.setWindowTitle("Matcha Chat (Generating, plz Processing.)")
     #     self.append_message(self.user_name, message)
     #
     #     if message:
@@ -792,7 +973,7 @@ class ChatUI(QWidget):
             return
         self.save_current_state()
         self.set_buttons(False)
-        self.setWindowTitle("Matcha Chat (Generating, plz wait....)")
+        self.setWindowTitle("Matcha Chat (Generating, plz wait.)")
         message = self.input_line.toPlainText()
         custom_stop_sequence = [self.user_name + ':', self.user_name + ': ', '!(image)', '!(gif)', '!(png)']
         if self.is_small:
