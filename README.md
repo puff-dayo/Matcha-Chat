@@ -38,7 +38,7 @@ Devices with <u>2/4/8GB of installed RAM</u> can run in text-only mode for a 1B/
 
 You need an additional <u>4GB of spare RAM</u> to chat with images.
 
-Really much VRAM is required to use GPU acceleration. Dont't enable that if your PC is **strong**.
+Really much VRAM is required to use GPU acceleration. Don't enable that if your PC is **strong**.
 
 ### Step 1: Get the executable
 
