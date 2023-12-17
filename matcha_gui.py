@@ -6,12 +6,13 @@ import subprocess
 import sys
 import threading
 import time
+import types
 import wave
 
 import psutil
 import pyaudio
 from PySide6.QtCore import QDateTime, QObject, Signal, Qt, QSize, QByteArray, QBuffer, QThread, QMimeData
-from PySide6.QtGui import QTextCursor, QTextCharFormat, QColor, QFont, QIcon, QPalette, QImage, QImageReader
+from PySide6.QtGui import QTextCursor, QTextCharFormat, QColor, QFont, QIcon, QPalette, QImage, QImageReader, QAction
 from PySide6.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout,
                                QTextEdit, QLineEdit, QPushButton, QGroupBox,
                                QFormLayout, QSpinBox, QLabel, QFileDialog, QMessageBox, QDoubleSpinBox, QFrame,
@@ -207,7 +208,9 @@ class ChatUI(QWidget):
         self.p = pyaudio.PyAudio()
 
         self.whispercpp = "https://github.com/ggerganov/whisper.cpp/releases/download/v1.5.1/whisper-blas-bin-x64.zip"
-        self.whispermodel = 'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-q5_0.bin?download=true'
+        self.whispermodel = ('https://huggingface.co/ggerganov/whisper.cpp/resolve'
+                             '/362722b3fdcd2300b58a8286933ead1c48619667/ggml-large-v3-q5_0.bin?download=true')
+        self.whispermodel_SHA256 = "d75795ecff3f83b5faa89d1900604ad8c780abd5739fae406de19f23ecd98ad1"
 
         self.init_ui()
         self.width_rem = self.width()
@@ -255,6 +258,7 @@ class ChatUI(QWidget):
 
         self.chat_display = QTextEdit()
         self.chat_display.setReadOnly(True)
+
         self.left_layout.addWidget(self.chat_display)
 
         tool_bar = QHBoxLayout()
@@ -498,9 +502,11 @@ class ChatUI(QWidget):
             self.stop_recording()
             self.record_button.setText('Processing')
             self.record_button.setEnabled(False)
+            self.record_button.setStyleSheet("")
         else:
             self.start_recording()
             self.record_button.setText('Finish')
+            self.record_button.setStyleSheet("background-color: red; color: white;")
 
     def start_recording(self):
         self.recording = True
@@ -530,7 +536,8 @@ class ChatUI(QWidget):
         self.voice_worker_thread.start()
 
     def handle_voice(self, result):
-        self.input_line.setText(self.input_line.toPlainText() + result)
+        current_text = self.input_line.toPlainText()
+        self.input_line.setText(current_text + (' ' if current_text.endswith(('.', '?', '!')) else '') + result)
         self.record_button.setText('Record')
         self.record_button.setEnabled(True)
         self.input_line.moveCursorToEnd()
@@ -631,7 +638,7 @@ class ChatUI(QWidget):
         cap_dl.DownloadDialog().exec()
 
     def check_vision(self):
-        if not self.detect_file('./models/cap', 'pytorch_model.bin'):
+        if not self.detect_file('./models', 'llava-v1.5-7b-q4-server.llamafile.exe'):
             self.buttonC.setText("Enable vision ability")
             self.cap_dler()
             self.checkFile()
@@ -792,9 +799,10 @@ class ChatUI(QWidget):
         self.chat_display.setText('')
 
     def model_dler(self):
-        file_url = ('https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF/resolve/main/Wizard-Vicuna-7B'
-                    '-Uncensored.Q5_K_M.gguf')
+        file_url = ('https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF/resolve'
+                    '/f79a3ef9409c1253a89954da679d970a488fb80a/Wizard-Vicuna-7B-Uncensored.Q5_K_M.gguf?download=true')
         destination_path = './models/Wizard-Vicuna-7B-Uncensored.Q5_K_M.gguf'
+        SHA256 = '5b862051eab3afc657b3399dafa1a8327cc642ecfe58b29a4fc2d1e8211c7731'
 
         self.download_dialog = model_dl.DownloadDialog(file_url, destination_path, self)
         self.download_dialog.exec()
@@ -1037,7 +1045,7 @@ class ChatUI(QWidget):
         self.ai_name_line_edit.setText(self.ai_name)
         self.sender_name_line_edit.setText(self.user_name)
         self.system_prompt_text_edit.setText(self.sys_prompt)
-        self.n_pridict_spinbox.setValue(96)
+        self.n_pridict_spinbox.setValue(384)
         self.temperature_spinbox.setValue(0.40)
 
 
@@ -1134,8 +1142,8 @@ class WorkThread(QThread):
 
 def on_close():
     print('Server shutdown.')
-    os.system('taskkill /f /im server.exe')
-    os.system('taskkill /f /im llava-v1.5-7b-q4-server.llamafile.exe')
+    func.kill_server_llava()
+    func.kill_server()
 
 
 def main():

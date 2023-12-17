@@ -90,9 +90,10 @@ class DownloadDialog(QDialog):
         self.setLayout(layout)
 
     def start_download(self):
-        self.urls = ["https://huggingface.co/jartine/llava-v1.5-7B-GGUF/resolve/main/llava-v1.5-7b-q4-server"
-                     ".llamafile?download=true"]
+        self.urls = ["https://huggingface.co/jartine/llava-v1.5-7B-GGUF/resolve"
+                     "/464b6aff708957b47af122b5b666d5ba81b8616b/llava-v1.5-7b-q4-server.llamafile?download=true"]
         self.dests = ["llava-v1.5-7b-q4-server.llamafile.exe"]
+        SHA256 = '67e368f87fc3df0a6cf8b566fe9d91adf3695e338e4c87232dc0be164a1b734c'
         self.download_thread = DownloadThread(self.urls, self.dests)
         self.download_thread.progress.connect(self.update_progress)
         self.download_thread.finished.connect(self.download_finished)

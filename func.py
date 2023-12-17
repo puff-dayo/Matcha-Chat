@@ -154,26 +154,39 @@ def run_server_llava():
     server_thread.start()
 
 
-def kill_server_llava():
-    subprocess.run(['taskkill', '/f', '/im', 'llava-v1.5-7b-q4-server.llamafile.exe'],
-                   stdout=subprocess.DEVNULL,
-                   stderr=subprocess.PIPE,
-                   creationflags=subprocess.CREATE_NO_WINDOW)
-    temp_dir = os.path.join(os.getcwd(), 'temp')
-    time.sleep(3)
-    for filename in os.listdir(temp_dir):
-        if filename.endswith(".log"):
-            file_path = os.path.join(temp_dir, filename)
-            os.remove(file_path)
+import subprocess
+import os
+import time
 
+def kill_server_llava():
+    result = subprocess.run(['taskkill', '/f', '/im', 'llava-v1.5-7b-q4-server.llamafile.exe'],
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.PIPE,
+                            creationflags=subprocess.CREATE_NO_WINDOW)
+
+    if result.returncode == 0:
+        temp_dir = os.path.join(os.getcwd(), 'temp')
+        time.sleep(3)
+        for filename in os.listdir(temp_dir):
+            if filename.endswith(".log"):
+                file_path = os.path.join(temp_dir, filename)
+                os.remove(file_path)
+    else:
+        print("Error: Command failed with return code", result.returncode)
 
 def kill_server():
-    subprocess.run(['taskkill', '/f', '/im', 'server.exe'],
-                   stdout=subprocess.DEVNULL,
-                   stderr=subprocess.PIPE,
-                   creationflags=subprocess.CREATE_NO_WINDOW)
-    temp_dir = os.path.join(os.getcwd(), 'temp')
-    for filename in os.listdir(temp_dir):
-        if filename.endswith(".log"):
-            file_path = os.path.join(temp_dir, filename)
-            os.remove(file_path)
+    result = subprocess.run(['taskkill', '/f', '/im', 'server.exe'],
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.PIPE,
+                            creationflags=subprocess.CREATE_NO_WINDOW)
+
+    if result.returncode == 0:
+        temp_dir = os.path.join(os.getcwd(), 'temp')
+        time.sleep(3)
+        for filename in os.listdir(temp_dir):
+            if filename.endswith(".log"):
+                file_path = os.path.join(temp_dir, filename)
+                os.remove(file_path)
+    else:
+        print("Error: Command failed with return code", result.returncode)
+
