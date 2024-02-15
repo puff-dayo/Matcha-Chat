@@ -2,7 +2,15 @@
 
 <img src="https://github.com/puff-dayo/matcha-chat/assets/84665734/5401d53a-2265-4038-a812-e9c2bd28afa4" width="64" />
 
+# MatchaChat2 Development Update
 
+🎆Excited to announce that **Matcha Chat 2** is currently under development!🎆
+
+Stay tuned for more updates. Your patience and support mean everything to me during this development phase.
+
+Thank you for being a part of our community. More details will be shared soon!
+
+---
 
 ## Introduction
 
