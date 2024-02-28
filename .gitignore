@@ -1,0 +1,17 @@
+/backend/
+/temp/
+/backend/
+/main.build/
+/main.dist/
+/main_window.dist/
+/.idea/
+/models/Noromaid-7B-0.4-DPO.q5_k_m.gguf
+/models/kunoichi-7b.Q6_K.gguf
+/build.bat
+/build_output/
+/services/__pycache__
+/__pycache__/
+/components/__pycache__/
+/models/translator/
+/models/dolphin-2.6-mistral-7b-dpo-laser.Q6_K.gguf
+/MatchaChat_v2.0_alpha.exe

@@ -1,4 +1,8 @@
-PySide6~=6.6.0
+psutil~=5.9.8
+QtAwesome~=1.3.0
+pywin32~=306
+PySide6~=6.6.1
+nuitka
 requests~=2.31.0
-Pillow~=10.2.0
-psutil~=5.9.6
+ctranslate2~=4.0.0
+sentencepiece~=0.1.99

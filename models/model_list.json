@@ -1,0 +1,54 @@
+[
+  {
+    "name": "Qwen1.5-0.5B-Chat (Q4_K_M, 407 MB) ENG/CHI",
+    "url": "https://huggingface.co/Qwen/Qwen1.5-0.5B-Chat-GGUF/resolve/main/qwen1_5-0_5b-chat-q4_k_m.gguf?download=true"
+  },
+  {
+    "name": "TinyLlama-1.1B-Chat (Q4_K_M, 668 MB) UNSTABLE",
+    "url": "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v0.3-GGUF/resolve/main/tinyllama-1.1b-chat-v0.3.Q4_K_M.gguf?download=true"
+  },
+  {
+    "name": "Nous-Hermes-2-SOLAR-10.7B (Q2, 4.55 GB) EXPERIMENTAL",
+    "url": "https://huggingface.co/ikawrakow/various-2bit-sota-gguf/resolve/main/nous-hermes-2-10.7b-2.41bpw.gguf?download=true"
+  },
+  {
+    "name": "Noromaid-7B-DPO (Q5_K_M, 5.13GB) MULTILINE&UNSTABLE",
+    "url": "https://huggingface.co/NeverSleep/Noromaid-7B-0.4-DPO-GGUF/resolve/main/Noromaid-7B-0.4-DPO.q5_k_m.gguf?download=true"
+  },
+  {
+    "name": "Dolphin-2.0-mistral-7B (Q5_K_S, 5.00 GB) UNSTABLE",
+    "url": "https://huggingface.co/TheBloke/dolphin-2.0-mistral-7B-GGUF/resolve/main/dolphin-2.0-mistral-7b.Q5_K_S.gguf?download=true"
+  },
+  {
+    "name": "OpenHermes-2.5-Mistral-7B (Q5_K_M, 5.13 GB)",
+    "url": "https://huggingface.co/TheBloke/OpenHermes-2.5-Mistral-7B-GGUF/resolve/main/openhermes-2.5-mistral-7b.Q5_K_M.gguf?download=true"
+  },
+  {
+    "name": "Dolphin-2.6-mistral-7B-dpo-laser (Q6_K, 5.94 GB) SUGGESTED",
+    "url": "https://huggingface.co/TheBloke/dolphin-2.6-mistral-7B-dpo-laser-GGUF/resolve/main/dolphin-2.6-mistral-7b-dpo-laser.Q6_K.gguf?download=true"
+  },
+  {
+    "name": "Kunoichi-7B (Q6_K, 5.94 GB) MULTILINE&SUGGESTED",
+    "url": "https://huggingface.co/TheBloke/Kunoichi-7B-GGUF/resolve/main/kunoichi-7b.Q6_K.gguf?download=true"
+  },
+  {
+    "name": "Nous-Hermes-2-SOLAR-10.7B (Q5_K_M, 7.07 GB)",
+    "url": "https://huggingface.co/TheBloke/Nous-Hermes-2-SOLAR-10.7B-GGUF/resolve/main/nous-hermes-2-solar-10.7b.Q5_K_M.gguf?download=true"
+  },
+  {
+    "name": "Qwen1.5-14B-Chat (Q5_0, 9.85 GB) ENG/CHI",
+    "url": "https://huggingface.co/Qwen/Qwen1.5-14B-Chat-GGUF/resolve/main/qwen1_5-14b-chat-q5_0.gguf?download=true"
+  },
+  {
+    "name": "Nous-Capybara-limarpv3-34B (Q5_K_M, 24.3 GB)",
+    "url": "https://huggingface.co/TheBloke/Nous-Capybara-limarpv3-34B-GGUF/resolve/main/nous-capybara-limarpv3-34b.Q5_K_M.gguf?download=true"
+  },
+  {
+    "name": "Dolphin-2.5-mixtral-8x7b (Q5_0, 32.2 GB)",
+    "url": "https://huggingface.co/TheBloke/dolphin-2.5-mixtral-8x7b-GGUF/resolve/main/dolphin-2.5-mixtral-8x7b.Q5_0.gguf?download=truee"
+  },
+  {
+    "name": "Meditron-70B (Q4_K_M, 41.4 GB) MEDICAL",
+    "url": "https://huggingface.co/TheBloke/meditron-70B-GGUF/resolve/main/meditron-70b.Q4_K_M.gguf?download=true"
+  }
+]
