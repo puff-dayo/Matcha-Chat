@@ -47,11 +47,12 @@ Really much VRAM is required to use GPU acceleration. Set gpu_layers to 0 unless
 
 Download the built binary executable file for x64 Windows OS from [Release](https://github.com/puff-dayo/matcha-chat/releases/), and place it in any empty folder.
 
-### Step 2: Click the download button
+### Step 2: Click the download buttons
 
 Download the llama.cpp backend, and your favorite models.
 
-### Step 3: Viola!
+### Step 3: Click the red button to launch 
+Viola!
 
 ## FAQ (Maybe)
 
