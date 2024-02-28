@@ -4,9 +4,9 @@
 
 # MatchaChat2 Development Update
 
-🎆Excited to announce that **Matcha Chat 2** is currently under development!🎆
+**Matcha Chat 2** is currently under development!
 
-Stay tuned for more updates. Your patience and support mean everything to me during this development phase.
+You can try the [pre-alpha](https://github.com/puff-dayo/Matcha-Chat/releases) version, taking your own **risk**.
 
 Thank you for being a part of our community. More details will be shared soon!
 
