@@ -15,5 +15,5 @@
 /models/translator/
 /models/dolphin-2.6-mistral-7b-dpo-laser.Q6_K.gguf
 /MatchaChat_v2.0_alpha.exe
-llama.log
+/llama.log
 *.log
