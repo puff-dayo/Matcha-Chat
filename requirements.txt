@@ -6,3 +6,5 @@ nuitka
 requests~=2.31.0
 ctranslate2~=4.0.0
 sentencepiece~=0.1.99
+pycountry~=23.12.11
+workalendar~=17.0.0

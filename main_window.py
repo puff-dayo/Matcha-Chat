@@ -5,23 +5,24 @@ from datetime import datetime
 
 import psutil
 import qtawesome as qta
-from PySide6.QtCore import Qt, QRectF, QSize, Signal, QThread, QPoint
-from PySide6.QtGui import (QPainter, QBrush, QColor, QPen, QFont, QPainterPath, QFontMetrics, QPalette, QIcon)
+from PySide6.QtCore import Qt, QSize, Signal, QThread, QPoint
+from PySide6.QtGui import (QColor, QFont, QPalette, QIcon)
 from PySide6.QtGui import (QStandardItemModel, QStandardItem)
 from PySide6.QtWidgets import (QApplication, QMainWindow, QListView, QVBoxLayout,
                                QWidget, QPushButton, QSplitter,
                                QGridLayout, QAbstractItemView, QLabel, QHBoxLayout, QFileDialog)
-from PySide6.QtWidgets import QStyledItemDelegate
 
 import services.completion as Server
 import services.settings_handler as Settings
 import services.windows_api_handler
+from services.chat_bubble_delegate import ChatBubbleDelegate
 from components.custom_textedit import CustomTextEdit
 from components.custom_titlebar import CustomTitleBar
 from downloader_window import DownloaderWindow
 from services.completion import Worker as CompletionWorker
-from settings_window import SettingsWindow
+from services.locale_handler import get_iso_country_code, get_formatted_date_and_holiday
 from services.translator import Translator
+from settings_window import SettingsWindow
 
 os.environ["QT_FONT_DPI"] = "100"
 
@@ -46,80 +47,6 @@ class MemoryMonitorThread(QThread):
             self.sleep(1)
 
             # TODO: how to monitor GPU and VRAM.... pynvml?
-
-
-class ChatBubbleDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.vertical_spacing = 10
-        self.horizontal_padding = 20
-        self.vertical_padding = 10  # Adjusted inside bubble
-        self.sender_height = 20
-
-    def paint(self, painter, option, index):
-        text = index.model().data(index, Qt.DisplayRole)
-        color = index.model().data(index, Qt.BackgroundRole)
-        alignment = index.model().data(index, Qt.TextAlignmentRole)
-        sender = index.model().data(index, Qt.UserRole)
-        sender = " " + sender if alignment == 'Left' else sender + " "
-
-        painter.save()
-        painter.setRenderHint(QPainter.Antialiasing)
-
-        font = QFont("Segoe UI", 12)
-        painter.setFont(font)
-        fm = QFontMetrics(font)
-
-        # Calculate text bounding rect
-        max_width = option.rect.width() * 0.75
-        text_bounding_rect = fm.boundingRect(0, 0, max_width - self.horizontal_padding * 2, 10000, Qt.TextWordWrap,
-                                             text)
-
-        # Calculate bubble size and position
-        bubble_width = text_bounding_rect.width() + self.horizontal_padding * 2
-        bubble_height = text_bounding_rect.height() + self.vertical_padding * 2
-        bubble_x = option.rect.left() if alignment == 'Left' else option.rect.right() - bubble_width
-        bubble_y = option.rect.top() + self.sender_height
-
-        shadow_offset = 3
-        shadow_color = QColor(0, 0, 0, 32)
-        shadow_rect = QRectF(bubble_x + shadow_offset, bubble_y + shadow_offset, bubble_width, bubble_height)
-        path_shadow = QPainterPath()
-        path_shadow.addRoundedRect(shadow_rect, 10, 10)
-        painter.fillPath(path_shadow, QBrush(shadow_color))
-
-        bubble_rect = QRectF(option.rect.left(), option.rect.top() + self.sender_height, bubble_width, bubble_height)
-        if alignment == 'Right':
-            bubble_rect.moveRight(option.rect.right())
-
-        # Draw bubble
-        path = QPainterPath()
-        path.addRoundedRect(bubble_rect, 10, 10)
-        painter.fillPath(path, QBrush(color))
-
-        # Draw sender name
-        sender_name_pos = bubble_rect.left() if alignment == 'Left' else bubble_rect.right() - fm.width(sender)
-        sender_rect = QRectF(sender_name_pos, option.rect.top(), bubble_width, self.sender_height)
-        painter.setPen(QPen(Qt.white))
-        painter.drawText(sender_rect, Qt.AlignLeft | Qt.AlignVCenter, sender)
-
-        # Draw message text
-        text_draw_rect = QRectF(bubble_rect.left() + self.horizontal_padding, bubble_rect.top() + self.vertical_padding,
-                                bubble_width - self.horizontal_padding * 2, bubble_height - self.vertical_padding * 2)
-        painter.setPen(QPen(Qt.black))
-        painter.drawText(text_draw_rect, Qt.TextWordWrap, text)
-
-        painter.restore()
-
-    def sizeHint(self, option, index):
-        text = index.model().data(index, Qt.DisplayRole)
-        font = QFont("Segoe UI", 12)
-        fm = QFontMetrics(font)
-        max_width = option.rect.width() * 0.75
-        text_bounding_rect = fm.boundingRect(0, 0, max_width - self.horizontal_padding * 2, 10000, Qt.TextWordWrap,
-                                             text)
-        bubble_height = text_bounding_rect.height() + self.vertical_padding * 2 + self.sender_height + self.vertical_spacing * 2
-        return QSize(int(max_width), int(bubble_height))
 
 
 class ChatWindow(QMainWindow):
@@ -164,6 +91,9 @@ class ChatWindow(QMainWindow):
         self.translator = Translator(translator_models_dir)
         self.translator.init_translator()
 
+        self.messages = []
+        self.messages_prev = []
+
     def init_chat_view(self):
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(5, 0, 5, 0)
@@ -183,8 +113,7 @@ class ChatWindow(QMainWindow):
         self.layout.addWidget(self.chatListView)
 
     def send_message(self):
-        # Save previous state TODO
-        # self.inputText.setEnabled(False)
+        self.save_current()
         try:
             user_input = self.inputText.toPlainText().strip()
             raw_input = user_input
@@ -253,10 +182,14 @@ class ChatWindow(QMainWindow):
             response_text = response_text[len(f"{self.ai_name}: "):].strip()
         if response_text.startswith(f"{self.ai_name}:"):
             response_text = response_text[len(f"{self.ai_name}:"):].strip()
-        marker = "<|im-end|>"
-        if response_text.endswith(marker):
-            response_text = response_text[:-len(marker)]
+        markers = ["<|im-end|>", "<|im_end>", "<|im_en>", "<|im_e>"]
 
+        for marker in markers:
+            if response_text.endswith(marker):
+                response_text = response_text[: -len(marker)]
+                break
+
+        self.messages_prev = self.messages
         self.messages.append({"role": "assistant", "content": response_text})
 
         text = response_text.strip()
@@ -265,8 +198,8 @@ class ChatWindow(QMainWindow):
         if self.multi_paragraph_enabled is False:
             if self.out_translate:
                 text = self.translator.translate(text_input=text,
-                                             source_lang='en',
-                                             target_lang=self.target)
+                                                 source_lang='en',
+                                                 target_lang=self.target)
             self.add_message(text, self.ai_color, "Left", self.ai_name)
         else:
             text = text.replace(" *", "\n\n*")
@@ -281,8 +214,8 @@ class ChatWindow(QMainWindow):
                 for split_text in split_texts:
                     if self.out_translate:
                         split_text = self.translator.translate(text_input=split_text,
-                                                           source_lang='en',
-                                                           target_lang=self.target)
+                                                               source_lang='en',
+                                                               target_lang=self.target)
                     self.add_message(split_text, self.ai_color, "Left", self.ai_name)
 
         self.token_status.setText(f"<font color='#b3b7b7'>Capacity:</font> {self.current_tokens_sum} <font "
@@ -309,11 +242,16 @@ class ChatWindow(QMainWindow):
             self.deserialize_model(self.initial_state)
 
         self.init_chat()
+        self.inputText.setEnabled(True)
+
+        self.messages_prev = []
 
     def undo(self):
         if self.previous_state is not None:
             self.deserialize_model(self.previous_state)
         self.scroll_to_bottom()
+        self.inputText.setEnabled(True)
+        self.messages = self.messages_prev
 
     def serialize_model(self):
         data = []
@@ -502,7 +440,7 @@ class ChatWindow(QMainWindow):
         self.undo_button = QPushButton()
         self.undo_button.setIcon(qta.icon('fa5s.undo', color='lightgray'))
         self.undo_button.setIconSize(QSize(16, 16))
-        # self.undo_button.clicked.connect(self.on_undo_clicked)
+        self.undo_button.clicked.connect(self.undo)
         self.undo_button.setToolTip("Undo last sent message.")
 
         self.delete_button = QPushButton()
@@ -529,27 +467,17 @@ class ChatWindow(QMainWindow):
         self.server_button.setToolTip("Launch or stop the llama.cpp server.")
         self.server_button.clicked.connect(self.launch_or_stop_server)
 
-        self.photo_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
-        download_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
-        self.undo_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
-        self.delete_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
-        settings_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
-        self.record_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
-        self.mem_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
-        self.model_list_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
-        self.server_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
+        for widget in [self.record_button, self.photo_button, download_button,
+                       self.undo_button, self.delete_button, self.mem_button,
+                       "Stretch",
+                       self.server_button, self.model_list_button, settings_button
+                       ]:
+            if widget == "Stretch":
+                self.toolBar.addStretch()
+            else:
+                widget.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
+                self.toolBar.addWidget(widget)
 
-        self.toolBar.addWidget(self.record_button)
-        self.toolBar.addWidget(self.photo_button)
-        self.toolBar.addWidget(download_button)
-        self.toolBar.addWidget(self.undo_button)
-        self.toolBar.addWidget(self.delete_button)
-        self.toolBar.addWidget(self.mem_button)
-
-        self.toolBar.addStretch()
-        self.toolBar.addWidget(self.server_button)
-        self.toolBar.addWidget(self.model_list_button)
-        self.toolBar.addWidget(settings_button)
 
     def launch_or_stop_server(self):
         self.reset()
@@ -578,9 +506,18 @@ class ChatWindow(QMainWindow):
         self.ai_name = prompt_settings["ai_name"]
         self.base_url = "http://localhost:35634/v1/chat/completions"
         sys_prompt = prompt_settings["sys_prompt"]
+
+        iso_code = get_iso_country_code()
+        date, holiday = get_formatted_date_and_holiday(iso_code)
+        current_time = datetime.now().strftime("%I:%M %p")
+        if holiday != "":
+            sys_prompt_mod = sys_prompt + f" [Conversation Start time: {current_time}, Date: {date}, Holiday: {holiday}]"
+        else:
+            sys_prompt_mod = sys_prompt + f" [Conversation Start time: {current_time}, Date: {date}]"
+
         self.messages = [
             {"role": "system",
-             "content": str(sys_prompt)},
+             "content": str(sys_prompt_mod)},
         ]
 
         self.current_tokens_sum = 0

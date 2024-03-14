@@ -28,7 +28,7 @@ The app interface allows for **easy** clicks installation of [llama.cpp](https:/
 - **[✔] Native GUI**: Not running in a browser or Electron.
 - **Vision ability**: Send images into your chat with AI.
 - **Voice input**：Speak your own language in your voice with auto translation to English.
-- **Built-in translator**: WIP
+- **[✔] Built-in translator**: Still WIP... 
 
 ❤️ All data stores and computes on your local machine, powered by multiple LLM models.
 
