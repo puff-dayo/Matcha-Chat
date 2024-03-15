@@ -51,21 +51,21 @@ Download the built binary executable file for x64 Windows OS from [Release](http
 
 Download the llama.cpp backend, and your favorite models.
 
-### Step 3: Click the red button to launch 
+### Step 3: Click the red triangle button to launch 
 Viola!
 
 ## FAQ (Maybe)
 
-**Q:** How to resize the window?
+**Q:** How to resize the window?<br>
 **A:** Right-click on the border, and drag.
 
-**Q:** How to manually add .gguf model?
+**Q:** How to manually add .gguf model?<br>
 **A:** Place model files into ./models folder.
 
-**Q:** Is larger model better?
+**Q:** Is larger model better?<br>
 **A:** No, it depends on your task, and the model itself. The LLM field is advancing so rapidly that it only takes days for the list of "best" models to refresh. However, note that leader boards are not entirely trustworthy, and many test ratings are distorted.
 
-**Q:** How to contribute?
+**Q:** How to contribute?<br>
 **A:** Fork and modify the code, raise an issue, or kiss Setsuna goodnight.
 
 ## Other Useful Information
@@ -87,3 +87,9 @@ If you like to~
 ```powershell
 nuitka --standalone --show-progress --onefile --disable-console --plugin-enable=pyside6 --windows-icon-from-ico=.\icon.ico --output-dir=build_output main_window.py
 ```
+
+### Dev machine infos
+
+**Processor:** Intel Core m3-6Y30 (2C4T)<br>
+**Graphics adapter:** Intel HD Graphics 515<br>
+**Memory:** Dual-Channel 2x8 GB<br>
