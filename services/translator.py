@@ -14,7 +14,7 @@ class Translator:
 
         self.path = model_path
 
-        self.init_translator()
+        # self.init_translator()
 
     def init_translator(self):
         self.sp = spm.SentencePieceProcessor()

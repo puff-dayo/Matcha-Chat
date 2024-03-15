@@ -24,7 +24,8 @@ from services.locale_handler import get_iso_country_code, get_formatted_date_and
 from services.translator import Translator
 from settings_window import SettingsWindow
 
-os.environ["QT_FONT_DPI"] = "100"
+# read_scale from ini? or match screen resolution?
+os.environ["QT_FONT_DPI"] = "120"
 
 
 class MemoryMonitorThread(QThread):
@@ -89,7 +90,8 @@ class ChatWindow(QMainWindow):
         models_dir = os.path.join(os.getcwd(), 'models')
         translator_models_dir = os.path.join(models_dir, 'translator')
         self.translator = Translator(translator_models_dir)
-        self.translator.init_translator()
+        if os.path.exists(os.path.join(models_dir, 'translator', 'spm.128k.mdoel')):
+            self.translator.init_translator()
 
         self.messages = []
         self.messages_prev = []

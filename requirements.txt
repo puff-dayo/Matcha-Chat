@@ -1,6 +1,6 @@
 psutil~=5.9.8
 QtAwesome~=1.3.0
-pywin32~=306
+pywin32
 PySide6~=6.6.1
 nuitka
 requests~=2.31.0
