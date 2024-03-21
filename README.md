@@ -6,7 +6,7 @@
 
 **Matcha Chat 2** is currently under development!
 
-You can try the [pre-alpha](https://github.com/puff-dayo/Matcha-Chat/releases) version, taking your own **risk**.
+See dev updates: MatchaChat 2 [Development Branch](https://github.com/puff-dayo/Matcha-Chat/tree/Version-2).
 
 Thank you for being a part of our community. More details will be shared soon!
 
