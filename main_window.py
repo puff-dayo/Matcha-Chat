@@ -25,7 +25,8 @@ from services.translator import Translator
 from settings_window import SettingsWindow
 
 # read_scale from ini? or match screen resolution?
-os.environ["QT_FONT_DPI"] = "120"
+# os.environ["QT_FONT_DPI"] = "120"
+os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
 
 
 class MemoryMonitorThread(QThread):
