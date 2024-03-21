@@ -15,12 +15,13 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QListView, QVBoxLayout
 import services.completion as Server
 import services.settings_handler as Settings
 import services.windows_api_handler
-from services.chat_bubble_delegate import ChatBubbleDelegate
 from components.custom_textedit import CustomTextEdit
 from components.custom_titlebar import CustomTitleBar
 from downloader_window import DownloaderWindow
+from services.chat_bubble_delegate import ChatBubbleDelegate
 from services.completion import Worker as CompletionWorker
 from services.locale_handler import get_iso_country_code, get_formatted_date_and_holiday
+from services.notification import show_notification, reply_signal
 from services.translator import Translator
 from settings_window import SettingsWindow
 
@@ -66,6 +67,8 @@ class ChatWindow(QMainWindow):
         self.initial_state = None
         self.previous_state = None
 
+        reply_signal.pop_view.connect(self.pop_up_window)  # Display a blink on the task bar
+
         self.setWindowTitle("Matcha Chat 2")
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint
                             | Qt.WindowMaximizeButtonHint)
@@ -96,6 +99,10 @@ class ChatWindow(QMainWindow):
 
         self.messages = []
         self.messages_prev = []
+
+    def pop_up_window(self):
+        self.activateWindow()
+        self.inputText.setFocus()
 
     def init_chat_view(self):
         self.layout = QVBoxLayout()
@@ -195,6 +202,11 @@ class ChatWindow(QMainWindow):
         self.messages_prev = self.messages
         self.messages.append({"role": "assistant", "content": response_text})
 
+        # notification TODO: add a switch
+        text_truncated = self.truncate_string(response_text, 64)
+        show_notification(title=f'{self.ai_name} sent you a message!',
+                          description=text_truncated)
+
         text = response_text.strip()
         text = text.replace("<br>", "\n\n*")
 
@@ -224,6 +236,15 @@ class ChatWindow(QMainWindow):
         self.token_status.setText(f"<font color='#b3b7b7'>Capacity:</font> {self.current_tokens_sum} <font "
                                   f"color='#b3b7b7'>/ {self.tokes_limit}</font>")
         print('Done generate.')
+
+    def truncate_string(self, s, max_length):
+        if len(s) <= max_length:
+            return s
+        else:
+            last_space = s[:max_length].rfind(' ')
+            if last_space == -1:
+                return s[:max_length - 3] + '...'
+            return s[:last_space] + '...'
 
     def open_downloader_window(self):
         self.downloader_window = DownloaderWindow(parent=self)
@@ -480,7 +501,6 @@ class ChatWindow(QMainWindow):
             else:
                 widget.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
                 self.toolBar.addWidget(widget)
-
 
     def launch_or_stop_server(self):
         self.reset()

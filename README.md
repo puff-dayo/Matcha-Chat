@@ -23,7 +23,7 @@ The app interface allows for **easy** clicks installation of [llama.cpp](https:/
 ## Features/Roadmaps
 
 - **[✔] Easy-to-use installation**: Download essential files and start a chat with just some pushes of button. Configure settings easily.
-- **Character management**: Load and save character cards(json). 
+- **[✔] Character management**: Load and save character cards(json). 
 - **[✔] Hardware acceration support**: clBlast for CPU/GPU hybrid inference.
 - **[✔] Native GUI**: Not running in a browser or Electron.
 - **Vision ability**: Send images into your chat with AI.
@@ -56,11 +56,8 @@ Viola!
 
 ## FAQ (Maybe)
 
-**Q:** How to resize the window?<br>
-**A:** Right-click on the border, and drag.
-
 **Q:** How to manually add .gguf model?<br>
-**A:** Place model files into ./models folder.
+**A:** Place model files into ./models folder, and go to settings in MatchaChat.
 
 **Q:** Is larger model better?<br>
 **A:** No, it depends on your task, and the model itself. The LLM field is advancing so rapidly that it only takes days for the list of "best" models to refresh. However, note that leader boards are not entirely trustworthy, and many test ratings are distorted.

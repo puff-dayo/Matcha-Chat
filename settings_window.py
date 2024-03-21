@@ -23,7 +23,7 @@ class SettingsWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.resize(800, 512)
+        self.resize(800, 768)
         self.initUI()
 
     def initUI(self):
@@ -126,6 +126,8 @@ class SettingsWindow(QMainWindow):
                                               "This option allows offloading some layers to the GPU for computation.\nGenerally results in decreased performance.\n\nNeeds much more RAM.\n\nSet to 0 for a weak GPU be faster.",
                                               1)
         model_config.addWidget(self.gpu_layers_slider)
+        # 1.A
+        model_config.addWidget(QLabel("\n# Self-extend parameters: "))
 
         # 1.X translator config
         left_middle_title_layout = QHBoxLayout()
