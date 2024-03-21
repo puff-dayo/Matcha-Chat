@@ -96,6 +96,8 @@ class SettingsWindow(QMainWindow):
                 index = self.model_select_box.findText(self.selected_file)
                 if index >= 0:
                     self.model_select_box.setCurrentIndex(index)
+        else:
+            self.selected_file = ""
         self.model_select_box.currentIndexChanged.connect(self.fileSelected)
         model_config.addWidget(QLabel("# Model select: "))
         model_config.addWidget(self.model_select_box)
