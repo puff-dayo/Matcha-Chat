@@ -529,29 +529,27 @@ class ChatWindow(QMainWindow):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self._dragging = True
-            self._drag_position = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
-            event.accept()
-
-        elif event.button() == Qt.RightButton:
-            self._resizing = True
-            self._resize_position = event.globalPosition().toPoint()
-            event.accept()
+            if self.isNearBorder(event.pos()):
+                self._resizing = True
+                self._resize_position = event.globalPosition().toPoint()
+                event.accept()
 
     def mouseMoveEvent(self, event):
-        if self._dragging:
-            self.move(event.globalPosition().toPoint() - self._drag_position)
-            event.accept()
-        elif self._resizing:
+        if self._resizing:
             delta = event.globalPosition().toPoint() - self._resize_position
             self._resize_position = event.globalPosition().toPoint()
-            self.resize(self.width() + delta.x(), self.height() + delta.y())
+            new_width = max(self.minimumWidth(), self.width() + delta.x())
+            new_height = max(self.minimumHeight(), self.height() + delta.y())
+            self.resize(new_width, new_height)
             event.accept()
 
     def mouseReleaseEvent(self, event):
-        self._dragging = False
         self._resizing = False
         event.accept()
+
+    def isNearBorder(self, pos, margin=10):
+        return (pos.x() < margin or pos.x() > self.width() - margin or
+                pos.y() < margin or pos.y() > self.height() - margin)
 
 
 def on_close():
