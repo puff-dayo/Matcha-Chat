@@ -283,7 +283,7 @@ class ChatWindow(QMainWindow):
             item = self.model.item(row)
             data.append({
                 'text': item.data(Qt.DisplayRole),
-                'color': item.data(Qt.BackgroundRole).name(),
+                'color': item.data(Qt.BackgroundRole),
                 'alignment': item.data(Qt.TextAlignmentRole),
                 'sender': item.data(Qt.UserRole)
             })

@@ -9,6 +9,8 @@ class CustomSlider(QWidget):
     def __init__(self, name, defaultValue, minValue, midValue, maxValue, toolTip, tickInterval=1):
         super().__init__()
 
+        self.updating_from_spin = False
+
         hbox = QHBoxLayout(self)
         hbox.setContentsMargins(5, 0, 5, 0)
 
@@ -101,16 +103,21 @@ class CustomSlider(QWidget):
             return int(round(self.midValue + (self.maxValue - self.midValue) * ((float(position) - 50) / 50)))
 
     def updateLabel(self, position):
-        value = self.sliderPositionToValue(position)
-        self.spin.setValue(int(value))
+        if not self.updating_from_spin:
+            value = self.sliderPositionToValue(position)
+            self.spin.setValue(int(value))
 
     def updateSlider(self, value):
+        self.updating_from_spin = True
         position = self.valueToSliderPosition(value)
         self.slider.setValue(position)
+        self.updating_from_spin = False
 
     def setValue(self, value):
+        self.updating_from_spin = True
         self.slider.setValue(self.valueToSliderPosition(value))
         self.spin.setValue(value)
+        self.updating_from_spin = False
 
     def value(self):
         return self.spin.value()

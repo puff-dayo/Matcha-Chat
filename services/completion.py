@@ -66,7 +66,9 @@ def load_settings():
         'capacity': 4096,
         'temperature': 0.7,
         'new_predict': 512,
-        'gpu_layers': 0
+        'gpu_layers': 0,
+        'grp_n': 1,
+        'grp_w': 512
     }
 
     config.read('config.ini')
@@ -75,7 +77,7 @@ def load_settings():
         for key in settings:
             if config.has_option('Settings', key):
                 value = config.get('Settings', key)
-                if key in ['threads', 'capacity', 'new_predict', 'gpu_layers']:
+                if key in ['threads', 'capacity', 'new_predict', 'gpu_layers', 'grp_n', 'grp_w']:
                     settings[key] = int(value)
                 elif key == 'temperature':
                     settings[key] = float(value)
@@ -97,16 +99,30 @@ def boot_func():
 
     settings = load_settings()
 
-    command = [
-        backend_dir + '/server',
-        '-m', models_dir + f'/{filename}',
-        '--host', '127.0.0.1',
-        '--port', '35634',
-        '-t', str(settings['threads']),
-        '-c', str(settings['capacity']),
-        '-ngl', str(settings['gpu_layers']),
-        '-b', '512'
-    ]
+    if str(settings['grp_n']) == "1":
+        command = [
+            backend_dir + '/server',
+            '-m', models_dir + f'/{filename}',
+            '--host', '127.0.0.1',
+            '--port', '35634',
+            '-t', str(settings['threads']),
+            '-c', str(settings['capacity']),
+            '-ngl', str(settings['gpu_layers']),
+            '-b', '512',
+            '--grp-attn-n', str(settings['grp_n']),
+            '--grp-attn-w', str(settings['grp_w'])
+        ]
+    else:
+        command = [
+            backend_dir + '/server',
+            '-m', models_dir + f'/{filename}',
+            '--host', '127.0.0.1',
+            '--port', '35634',
+            '-t', str(settings['threads']),
+            '-c', str(settings['capacity']),
+            '-ngl', str(settings['gpu_layers']),
+            '-b', '512'
+        ]
 
     with open(temp_dir + '/llama_output.log', 'w') as output_file:
         process = subprocess.Popen(command, stdout=output_file, stderr=subprocess.STDOUT,

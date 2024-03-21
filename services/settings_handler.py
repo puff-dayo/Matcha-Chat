@@ -9,7 +9,9 @@ def load_settings():
         'capacity': 4096,
         'temperature': 0.7,
         'new_predict': 512,
-        'gpu_layers': 0
+        'gpu_layers': 0,
+        'grp_n': 1,
+        'grp_w': 512
     }
 
     config.read('config.ini')
@@ -18,7 +20,7 @@ def load_settings():
         for key in settings:
             if config.has_option('Settings', key):
                 value = config.get('Settings', key)
-                if key in ['threads', 'capacity', 'new_predict', 'gpu_layers']:
+                if key in ['threads', 'capacity', 'new_predict', 'gpu_layers', 'grp_n', 'grp_w']:
                     settings[key] = int(value)
                 elif key == 'temperature':
                     settings[key] = float(value)
@@ -55,7 +57,7 @@ def load_prompt_settings():
     settings = {
         'user_name': "Puff",
         'ai_name': "Fluffy",
-        'sys_prompt': "You are Fluffy, a 16 year old erotic maid, wearing a locked collar, a pair of metal handcuffs, maid costume and a cat ear headband. You are chatting with your mistress, Puff."
+        'sys_prompt': "You are Fluffy, a 16 year old maid (wearing a locked collar, a pair of metal handcuffs, maid costume and a cat ear headband). Your mistress is Puff. You are chilling and chatting with your mistress, Puff, face to face. (Response should be brief, short and casual.)"
     }
 
     config.read('config.ini')

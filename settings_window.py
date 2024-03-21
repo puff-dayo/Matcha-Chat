@@ -1,19 +1,18 @@
-import configparser
 import json
 import os
 from configparser import ConfigParser
 
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QPalette, QColor
+from PySide6.QtCore import Qt, QUrl
+from PySide6.QtGui import QPalette, QColor, QCursor, QDesktopServices
 from PySide6.QtWidgets import (QVBoxLayout,
                                QMainWindow,
                                QWidget, QGridLayout, QLabel, QComboBox, QHBoxLayout, QLineEdit, QTextEdit, QPushButton,
                                QFileDialog, QMessageBox, QCheckBox)
 
+import services.settings_handler as Settings
 import services.windows_api_handler
 from components.custom_sliders import CustomSlider, CustomSliderDouble
 from components.custom_titlebar import CustomTitleBar
-import services.settings_handler as Settings
 
 
 # TODO: construct config path and replace all hard encoded strings below
@@ -127,7 +126,44 @@ class SettingsWindow(QMainWindow):
                                               1)
         model_config.addWidget(self.gpu_layers_slider)
         # 1.A
-        model_config.addWidget(QLabel("\n# Self-extend parameters: "))
+        model_config.addWidget(QLabel("\n# LongLM parameters: "))
+        grp_tip = r"""Set GroupSize to 1 = disable
+        
+With Llama-2 as the base model, 2~64 are reasonable for group_size;
+512~1536 are feasible for neighbor_window. But larger group_size and
+smaller neighbor_window are also good in many cases.
+
+T: original capacity
+C: the capacity you want
+
+G: group size
+N: neighbor window
+
+The rule is: G * T >= C.
+
+I think the authors generally used 512 for N,
+but maybe you can go up to T/2.
+
+Remember to change the "capacity" slide as well!
+
+https://arxiv.org/pdf/2401.01325.pdf
+"""
+        self.grp_n_slider = CustomSlider("GroupSize:", 1, 1, 4, 64,
+                                         grp_tip, 1)
+        model_config.addWidget(self.grp_n_slider)
+        self.grp_w_slider = CustomSlider("Window:", 512, 256, 1536, 4096,
+                                         grp_tip, 1)
+        model_config.addWidget(self.grp_w_slider)
+
+        help_layout = QHBoxLayout()
+        self.help_label = QLabel("More about LongLM", self)
+        self.help_label.move(50, 50)
+        self.help_label.setStyleSheet("QLabel { color: white; text-decoration: underline; }")
+        self.help_label.setCursor(QCursor(Qt.PointingHandCursor))
+        self.help_label.mousePressEvent = self.open_help_page
+        help_layout.addStretch()
+        help_layout.addWidget(self.help_label)
+        model_config.addLayout(help_layout)
 
         # 1.X translator config
         left_middle_title_layout = QHBoxLayout()
@@ -304,6 +340,10 @@ class SettingsWindow(QMainWindow):
         trans_settings = Settings.load_translator_settings()
         self.update_trans_settings(trans_settings)
 
+    def open_help_page(self, event):
+        url = "https://github.com/datamllab/LongLM#4how-to-choose-the-group_size-and-neighbor_window"
+        QDesktopServices.openUrl(QUrl(url))
+
     def switch_state_changed(self):
         settings = {
             'in': '1' if self.input_switch.isChecked() else '0',
@@ -313,7 +353,8 @@ class SettingsWindow(QMainWindow):
         Settings.save_translator_settings(settings)
 
     def save_to_json(self):
-        file_path, _ = QFileDialog.getSaveFileName(self, "Save character card file", "", "JSON file (*.json);;All files (*)")
+        file_path, _ = QFileDialog.getSaveFileName(self, "Save character card file", "",
+                                                   "JSON file (*.json);;All files (*)")
         if file_path:
             data = {
                 'ai_name': self.ai_name_line_edit.text(),
@@ -328,7 +369,8 @@ class SettingsWindow(QMainWindow):
                 QMessageBox.critical(self, "Error", f"An error occurred: {e}")
 
     def load_from_json(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Load character card file", "", "JSON Files (*.json);;All Files (*)")
+        file_path, _ = QFileDialog.getOpenFileName(self, "Load character card file", "",
+                                                   "JSON Files (*.json);;All Files (*)")
         if file_path:
             try:
                 with open(file_path, 'r', encoding='utf-8') as file:
@@ -454,6 +496,8 @@ class SettingsWindow(QMainWindow):
         self.temperature_slider.setValue(settings['temperature'])
         self.predict_size_slider.setValue(settings['new_predict'])
         self.gpu_layers_slider.setValue(settings['gpu_layers'])
+        self.grp_n_slider.setValue(settings['grp_n'])
+        self.grp_w_slider.setValue(settings['grp_w'])
 
     def closeEvent(self, event):
         settings = {
@@ -461,7 +505,9 @@ class SettingsWindow(QMainWindow):
             'capacity': self.content_size_slider.value(),
             'temperature': self.temperature_slider.value(),
             'new_predict': self.predict_size_slider.value(),
-            'gpu_layers': self.gpu_layers_slider.value()
+            'gpu_layers': self.gpu_layers_slider.value(),
+            'grp_n': self.grp_n_slider.value(),
+            'grp_w': self.grp_w_slider.value()
         }
 
         Settings.save_settings(settings)

@@ -123,7 +123,7 @@ class DownloaderWindow(QMainWindow):
         download_backend = QPushButton("Download")
         download_backend.setStyleSheet(button_style)
         left_hox_1 = QHBoxLayout()
-        left_hox_1.addWidget(QLabel(" llama.cpp b2143 + clblast, 4.4 MB"))
+        left_hox_1.addWidget(QLabel(" llama.cpp b2487 + clblast, 4.4 MB"))
         left_hox_1.addWidget(download_backend)
         download_backend.clicked.connect(self.download_backend)
         self.left_layout.addLayout(left_hox_1)
@@ -174,9 +174,9 @@ class DownloaderWindow(QMainWindow):
 
     def download_backend(self):
         self.download_backend_diag = DownloaderDialog(destination=backend_dir,
-                                                      url="https://github.com/ggerganov/llama.cpp/releases/download/b2143/llama"
-                                                          "-b2143-bin-win-clblast-x64.zip",
-                                                      file_info="Pre-built llama.cpp binaries:\nb2143-clblast-x64, 4.4 MB",
+                                                      url="https://github.com/ggerganov/llama.cpp/releases/download/b2487/llama"
+                                                          "-b2487-bin-win-clblast-x64.zip",
+                                                      file_info="Pre-built llama.cpp binaries:\nb2487-clblast-x64, 4.4 MB",
                                                       parent=self, unzip=True)
         self.download_backend_diag.show()
 
