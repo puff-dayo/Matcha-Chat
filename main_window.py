@@ -80,7 +80,7 @@ class ChatWindow(QMainWindow):
         self.setPalette(palette)
 
         self.init_width = 600
-        self.init_height = 901
+        self.init_height = 768
         self.resize(self.init_width, self.init_height)
 
         self.restore_shadow()
@@ -94,7 +94,8 @@ class ChatWindow(QMainWindow):
         models_dir = os.path.join(os.getcwd(), 'models')
         translator_models_dir = os.path.join(models_dir, 'translator')
         self.translator = Translator(translator_models_dir)
-        if os.path.exists(os.path.join(models_dir, 'translator', 'spm.128k.mdoel')):
+        if os.path.exists(os.path.join(models_dir, 'translator', 'spm.128k.model')):
+            print('init translator!')
             self.translator.init_translator()
 
         self.messages = []

@@ -19,3 +19,5 @@
 *.log
 config.ini
 /backend_bak/
+MatchaChat_v2.0_alpha2.exe
+models/Hermes-2-Pro-Mistral-7B.Q6_K.gguf

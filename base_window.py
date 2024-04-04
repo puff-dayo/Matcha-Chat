@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QVBoxLayout,
                                QWidget)
 
 import services.windows_api_handler
-from services.custom_titlebar import CustomTitleBar
+from components.custom_titlebar import CustomTitleBar
 
 
 class BaseWindow(QMainWindow):

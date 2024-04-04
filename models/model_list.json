@@ -32,6 +32,10 @@
     "url": "https://huggingface.co/TheBloke/Kunoichi-7B-GGUF/resolve/main/kunoichi-7b.Q6_K.gguf?download=true"
   },
   {
+    "name": "Hermes-2-Pro-Mistral-7B (Q6_K, 5.94 GB)",
+    "url": "https://huggingface.co/NousResearch/Hermes-2-Pro-Mistral-7B-GGUF/resolve/main/Hermes-2-Pro-Mistral-7B.Q6_K.gguf?download=true"
+  },
+  {
     "name": "Nous-Hermes-2-SOLAR-10.7B (Q5_K_M, 7.07 GB)",
     "url": "https://huggingface.co/TheBloke/Nous-Hermes-2-SOLAR-10.7B-GGUF/resolve/main/nous-hermes-2-solar-10.7b.Q5_K_M.gguf?download=true"
   },

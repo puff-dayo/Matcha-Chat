@@ -34,7 +34,7 @@ class DownloaderWindow(QMainWindow):
         _json_file = os.path.join(_base_dir, "models", "model_list.json")
 
         self.jsonfile = _json_file
-        self.resize(1024, 512)
+        self.resize(576, 576)
 
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint
                             | Qt.WindowMaximizeButtonHint)
@@ -50,15 +50,18 @@ class DownloaderWindow(QMainWindow):
         self.windowEffect.setAcrylicEffect(int(self.winId()), gradientColor='00101080')
 
         central_widget = QWidget(self)
-        gridLayout = QGridLayout(central_widget)
-        self.setCentralWidget(central_widget)
+        # gridLayout = QGridLayout(central_widget)
+        # self.setCentralWidget(central_widget)
 
         self.left_layout = QVBoxLayout()
         self.right_layout = QVBoxLayout()
-        gridLayout.setColumnStretch(0, 1)
-        gridLayout.setColumnStretch(1, 1)
-        gridLayout.addLayout(self.left_layout, 0, 0)
-        gridLayout.addLayout(self.right_layout, 0, 1)
+        central_widget.setLayout(self.left_layout)
+        self.setCentralWidget(central_widget)
+
+        # gridLayout.setColumnStretch(0, 1)
+        # gridLayout.setColumnStretch(1, 1)
+        # gridLayout.addLayout(self.left_layout, 0, 0)
+        # gridLayout.addLayout(self.right_layout, 0, 1)
 
         button_style = """
                 QPushButton {
@@ -76,8 +79,8 @@ class DownloaderWindow(QMainWindow):
                 """
 
         # Left layout
-        gridLayout.setContentsMargins(10, 10, 10, 10)
-        gridLayout.setSpacing(10)
+        # gridLayout.setContentsMargins(10, 10, 10, 10)
+        # gridLayout.setSpacing(10)
 
         self.file_list_widget = QListWidget()
         self.file_list_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -128,27 +131,44 @@ class DownloaderWindow(QMainWindow):
         download_backend.clicked.connect(self.download_backend)
         self.left_layout.addLayout(left_hox_1)
 
+        self.left_layout.addStretch()
+
         self.left_layout.addWidget(QLabel("2. Download a LLM model"))
         self.left_layout.addWidget(self.file_list_widget)
         self.download_button = QPushButton("Download Selected")
         self.download_button.setStyleSheet(button_style)
         self.custom_download_button = QPushButton("Download Custom...")
         self.custom_download_button.setStyleSheet(button_style)
-        self.left_layout.addWidget(self.download_button)
-        self.left_layout.addWidget(self.custom_download_button)
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.custom_download_button)
+        button_layout.addWidget(self.download_button)
+        self.left_layout.addLayout(button_layout)
         self.download_button.clicked.connect(self.download_model)
         self.custom_download_button.clicked.connect(self.custom_download)
 
-        self.right_layout.addWidget(QLabel("3. Download a translator model (optional)"))
+        self.left_layout.addStretch()
+
+        self.left_layout.addWidget(QLabel("3. Download a translator model (optional)"))
         download_translator = QPushButton("Download")
         download_translator.setStyleSheet(button_style)
         download_translator.clicked.connect(self.download_translator)
         right_hox_1 = QHBoxLayout()
         right_hox_1.addWidget(QLabel(" m2m-100 1.2b(int8), 1.3 GB"))
         right_hox_1.addWidget(download_translator)
-        self.right_layout.addLayout(right_hox_1)
+        self.left_layout.addLayout(right_hox_1)
 
-        self.right_layout.addStretch()
+        self.left_layout.addStretch()
+
+        self.left_layout.addWidget((QLabel("4. Download a visual model (optional)")))
+        download_visual = QPushButton("Download")
+        download_visual.setStyleSheet(button_style)
+        download_visual.clicked.connect(self.download_visual)
+        right_hox_2 = QHBoxLayout()
+        right_hox_2.addWidget(QLabel(" llava-v1.5-7B-GGUF, ~4.0GB"))
+        right_hox_2.addWidget(download_visual)
+        self.left_layout.addLayout(right_hox_2)
+
+        # self.left_layout.addStretch()
 
         self.left_layout.setContentsMargins(8, 8, 8, 8)
         self.left_layout.setSpacing(8)
@@ -171,6 +191,15 @@ class DownloaderWindow(QMainWindow):
                                                        file_info="M2M100 Multilingual Machine Translation:\n4 files in total, 1.3 GB",
                                                        parent=self, urls=file_urls)
         self.download_trans_diag.show()
+
+    def download_visual(self):
+        file_urls = [
+            'https://huggingface.co/jartine/llava-v1.5-7B-GGUF/resolve/464b6aff708957b47af122b5b666d5ba81b8616b/llava-v1.5-7b-q4-server.llamafile?download=true'
+        ]
+        self.download_v_diag = MultiDownloaderDiag(destination=translator_models_dir,
+                                                   file_info="llava-v1.5-7B-GGUF llamafile:\n1 file in total, 4.0 GB",
+                                                   parent=self, urls=file_urls)
+        self.download_v_diag.show()
 
     def download_backend(self):
         self.download_backend_diag = DownloaderDialog(destination=backend_dir,
