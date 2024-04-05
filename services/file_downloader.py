@@ -50,7 +50,7 @@ class DownloadThread(QThread):
                     total_size = int(r.headers.get('content-range').split('/')[1])
 
                 with open(dest, 'ab') as f:
-                    for chunk in r.iter_content(chunk_size=8192):
+                    for chunk in r.iter_content(chunk_size=4096):
                         if self.is_canceled:
                             self.finished.emit()
                             return
@@ -69,12 +69,13 @@ class DownloadThread(QThread):
 
 
 class DownloaderDialog(QMainWindow):
-    def __init__(self, url, destination, file_info="llama.cpp, total ~2MB", unzip=False, parent=None):
+    def __init__(self, url, destination, file_info="llama.cpp, total ~2MB", unzip=False, visual=False, parent=None):
         super().__init__(parent)
         self.url = url
         self.destination = destination  # needs absolute full path
         self.need_unzip = unzip
         self.file_info = file_info
+        self.visual = visual
 
         parsed_url = urlparse(self.url)
         self.filename = os.path.basename(unquote(parsed_url.path))
@@ -226,6 +227,11 @@ class DownloaderDialog(QMainWindow):
                 QMessageBox.information(self, "Finished!", msg)
                 source_path = os.path.join(os.path.abspath('./temp'), self.filename)
                 shutil.move(source_path, self.destination)
+                if self.visual:
+                    destination_path = os.path.join(self.destination, self.filename)
+                    base, ext = os.path.splitext(destination_path)
+                    new_destination_path = base + '.exe'
+                    os.rename(destination_path, new_destination_path)
                 print("File moved.")
         else:
             QMessageBox.information(self, "Information", "Download was canceled or unsuccessful.")

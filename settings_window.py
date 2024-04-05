@@ -7,7 +7,7 @@ from PySide6.QtGui import QPalette, QColor, QCursor, QDesktopServices
 from PySide6.QtWidgets import (QVBoxLayout,
                                QMainWindow,
                                QWidget, QGridLayout, QLabel, QComboBox, QHBoxLayout, QLineEdit, QTextEdit, QPushButton,
-                               QFileDialog, QMessageBox, QCheckBox)
+                               QFileDialog, QMessageBox, QCheckBox, QApplication)
 
 import services.settings_handler as Settings
 import services.windows_api_handler
@@ -22,7 +22,19 @@ class SettingsWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.resize(800, 768)
+        # self.resize(800, 768)
+
+        screen = QApplication.primaryScreen()
+        screen_geometry = screen.geometry()
+        screen_width = screen_geometry.width()
+        screen_height = screen_geometry.height()
+
+        self.init_width = int(screen_width * 0.42)
+        self.init_height = int(screen_height * 0.72)
+        self.resize(self.init_width, self.init_height)
+
+        self.move(int((screen_width - self.init_width) / 2), int((screen_height - self.init_height) / 2))
+
         self.initUI()
 
     def initUI(self):

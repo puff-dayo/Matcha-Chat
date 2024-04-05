@@ -193,12 +193,10 @@ class DownloaderWindow(QMainWindow):
         self.download_trans_diag.show()
 
     def download_visual(self):
-        file_urls = [
-            'https://huggingface.co/jartine/llava-v1.5-7B-GGUF/resolve/464b6aff708957b47af122b5b666d5ba81b8616b/llava-v1.5-7b-q4-server.llamafile?download=true'
-        ]
-        self.download_v_diag = MultiDownloaderDiag(destination=translator_models_dir,
-                                                   file_info="llava-v1.5-7B-GGUF llamafile:\n1 file in total, 4.0 GB",
-                                                   parent=self, urls=file_urls)
+        file_url = 'https://huggingface.co/jartine/llava-v1.5-7B-GGUF/resolve/464b6aff708957b47af122b5b666d5ba81b8616b/llava-v1.5-7b-q4-server.llamafile?download=true'
+        self.download_v_diag = DownloaderDialog(destination=models_dir,
+                                                file_info="llava-v1.5-7B-GGUF llamafile:\n1 file in total, 4.0 GB",
+                                                parent=self, url=file_url, visual=True)
         self.download_v_diag.show()
 
     def download_backend(self):

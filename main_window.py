@@ -79,9 +79,16 @@ class ChatWindow(QMainWindow):
         palette.setColor(QPalette.Window, QColor(0, 0, 0))
         self.setPalette(palette)
 
-        self.init_width = 600
-        self.init_height = 768
+        screen = QApplication.primaryScreen()
+        screen_geometry = screen.geometry()
+        screen_width = screen_geometry.width()
+        screen_height = screen_geometry.height()
+
+        self.init_width = int(screen_width * 0.35)
+        self.init_height = int(screen_height * 0.98)
         self.resize(self.init_width, self.init_height)
+
+        self.move(int((screen_width - self.init_width) / 2), int((screen_height - self.init_height) / 2))
 
         self.restore_shadow()
         self.init_ui()
@@ -101,7 +108,11 @@ class ChatWindow(QMainWindow):
         self.messages = []
         self.messages_prev = []
 
+        self.raise_()
+        self.activateWindow()
+
     def pop_up_window(self):
+        self.raise_()
         self.activateWindow()
         self.inputText.setFocus()
 
