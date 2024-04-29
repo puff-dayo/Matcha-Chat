@@ -1,4 +1,4 @@
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, Signal, Slot
 from win11toast import toast
 
 
@@ -7,9 +7,7 @@ def show_notification(title='Hello', description='This is a hello.'):
           on_click=lambda args: on_view())
 
 
-def on_dismiss():
-    pass
-
+@Slot()
 def on_view():
     reply_signal.pop_view.emit("0")
 
@@ -19,4 +17,3 @@ class ViewSignal(QObject):
 
 
 reply_signal = ViewSignal()
-
