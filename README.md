@@ -4,13 +4,11 @@
 
 # MatchaChat 2 Development Branch
 
-**<Warning: Matcha Chat 2 is currently under development!>**
+Matcha Chat 2 is currently under **HEAVY** development! Everything is under development. Expect bugs and errors.
 
-Everything is under development. Expect bugs and errors.
+See old version: MatchaChat 1 [Branch](https://github.com/puff-dayo/Matcha-Chat/tree/main).
 
 Thank you for your support.
-
-**</Warning: Matcha Chat 2 is currently under development!>**
 
 ---
 
@@ -30,15 +28,16 @@ The app interface allows for **easy** installation of llama.cpp, some models fro
 - **Voice input**：Speak your own language in your voice with auto translation to English, WIP.
 - **[✔] Built-in translator**
 - **[✔] Wrapped LongLM support**
+- **[-] Long-term memory**: currently working with _highest_ priority.
 
-❤️ All data stores and computes on your local machine, powered by multiple LLM models.
+❤️ All data stores and computes on your local machine, powered by multiple machine learning models.
 
 
 ## Installation Guide
 
 --- Hardware requirements ---
 
-Devices with <u>2/4/8GB of installed RAM</u> can run in text-only mode for a 1B/3B/7B model.
+Devices with <u>2/4/8GB of installed RAM</u> can run in text-only mode for a quantized 1B/3B/7B model.
 
 You need an additional <u>4GB of spare RAM</u> to chat with images.
 
@@ -58,7 +57,7 @@ Viola!
 ## FAQ (Maybe)
 
 **Q:** How to manually add .gguf model?<br>
-**A:** Place model files into ./models folder, and go to settings in MatchaChat.
+**A:** Place model files into ./models folder, and **go to settings in MatchaChat to apply.**
 
 **Q:** Is larger model better?<br>
 **A:** No, it depends on your task, and the model itself. The LLM field is advancing so rapidly that it only takes days for the list of "best" models to refresh. However, note that leader boards are not entirely trustworthy, and many test ratings are distorted.
