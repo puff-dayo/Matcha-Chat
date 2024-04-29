@@ -18,10 +18,11 @@ import services.windows_api_handler
 from components.custom_textedit import CustomTextEdit
 from components.custom_titlebar import CustomTitleBar
 from downloader_window import DownloaderWindow
+from memory_window import MemoryWindow, MemoryManager
 from services.chat_bubble_delegate import ChatBubbleDelegate
 from services.completion import Worker as CompletionWorker
 from services.locale_handler import get_iso_country_code, get_formatted_date_and_holiday
-from services.notification import show_notification, reply_signal
+from services.notification import show_notification
 from services.translator import Translator
 from settings_window import SettingsWindow
 
@@ -67,8 +68,6 @@ class ChatWindow(QMainWindow):
         self.initial_state = None
         self.previous_state = None
 
-        reply_signal.pop_view.connect(self.pop_up_window)  # Display a blink on the task bar
-
         self.setWindowTitle("Matcha Chat 2")
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint
                             | Qt.WindowMaximizeButtonHint)
@@ -96,6 +95,8 @@ class ChatWindow(QMainWindow):
         self.init_thread()
         self.save_init()
 
+        self.memory_manager = None
+
         # self.update_translator_settings()
 
         models_dir = os.path.join(os.getcwd(), 'models')
@@ -110,11 +111,6 @@ class ChatWindow(QMainWindow):
 
         self.raise_()
         self.activateWindow()
-
-    def pop_up_window(self):
-        self.raise_()
-        self.activateWindow()
-        self.inputText.setFocus()
 
     def init_chat_view(self):
         self.layout = QVBoxLayout()
@@ -216,8 +212,9 @@ class ChatWindow(QMainWindow):
 
         # notification TODO: add a switch
         text_truncated = self.truncate_string(response_text, 64)
-        show_notification(title=f'{self.ai_name} sent you a message!',
-                          description=text_truncated)
+        show_notification(self=self,
+                          title=f"New message from {self.ai_name}",
+                          description=f"{text_truncated}")
 
         text = response_text.strip()
         text = text.replace("<br>", "\n\n*")
@@ -249,6 +246,40 @@ class ChatWindow(QMainWindow):
                                   f"color='#b3b7b7'>/ {self.tokes_limit}</font>")
         print('Done generate.')
 
+    def generate_memory_entry(self):
+        chat_history = "\n"
+        for row in range(self.model.rowCount()):
+            item = self.model.item(row)
+            text = item.data(Qt.DisplayRole)
+            sender = item.data(Qt.UserRole)
+
+            if sender:
+                chat_history = chat_history + f'{sender}: {text}\n'
+            else:
+                pass
+
+        sys_prompt_mem = (
+            f"{self.sys_prompt} Acting as {self.ai_name}, you want to summarize a chat with"
+            f"{self.user_name}. Your goal is to provide a concise and informative paragraph that captures the "
+            "essence of the conversation, highlights any decisions made, and mentions any follow-up "
+            f"actions. It is imperative that no crucial information is omitted. How would {self.ai_name} "
+            "skillfully craft such a short summary while staying true to their character and maintaining "
+            "the integrity of the information exchanged?")
+        messages = [
+            {
+                "role": "system",
+                "content": sys_prompt_mem,
+            },
+            {"role": "user", "content": f"\n\nChat History:\n\n{chat_history}"},
+        ]
+
+        self.worker = CompletionWorker(self.base_url, "gpt-3.5-turbo", messages, self.temperature)
+        self.worker.finished.connect(self.on_mem_entry_received)
+        self.worker.start()
+
+    def on_mem_entry_received(self):
+        pass  # TODO
+
     def truncate_string(self, s, max_length):
         if len(s) <= max_length:
             return s
@@ -260,12 +291,17 @@ class ChatWindow(QMainWindow):
 
     def open_downloader_window(self):
         self.downloader_window = DownloaderWindow(parent=self)
-        # self.dialog.setWindowFlags(self.dialog.windowFlags() | Qt.WindowStaysOnTopHint)
         self.downloader_window.show()
 
     def open_settings_window(self):
         self.setting_window = SettingsWindow(parent=self)
         self.setting_window.show()
+
+    def open_memory_window(self):
+        if self.memory_manager is None:
+            self.memory_manager = MemoryManager()
+        self.memory_window = MemoryWindow(parent=self, _memory_manager=self.memory_manager)
+        self.memory_window.show()
 
     def save_init(self):
         self.initial_state = self.serialize_model()
@@ -456,10 +492,10 @@ class ChatWindow(QMainWindow):
         self.record_button.setEnabled(False)
 
         self.mem_button = QPushButton()
-        self.mem_button.setIcon(qta.icon('fa5s.calendar-plus', color='lightgray'))
-        self.mem_button.setIconSize(QSize(20, 20))
+        self.mem_button.setIcon(qta.icon('fa5s.file-medical-alt', color='lightgray'))
+        self.mem_button.setIconSize(QSize(18, 18))
         self.mem_button.setToolTip("View and record permanent memories.")
-        # self.mem_button.clicked.connect(self.show_mem_diag)
+        self.mem_button.clicked.connect(self.open_memory_window)
 
         self.photo_button = QPushButton()
         self.photo_button.setIcon(qta.icon('fa5s.image', color='lightgray'))
@@ -503,8 +539,14 @@ class ChatWindow(QMainWindow):
         self.server_button.setToolTip("Launch or stop the llama.cpp server.")
         self.server_button.clicked.connect(self.launch_or_stop_server)
 
+        self.add_mem_button = QPushButton()
+        self.add_mem_button.setIcon(qta.icon('fa5s.save', color='lightgray'))
+        self.add_mem_button.setIconSize(QSize(20, 20))
+        self.add_mem_button.setToolTip("Generate a memory entry.")
+        self.add_mem_button.clicked.connect(self.generate_memory_entry)
+
         for widget in [self.record_button, self.photo_button, download_button,
-                       self.undo_button, self.delete_button, self.mem_button,
+                       self.undo_button, self.delete_button, self.mem_button, self.add_mem_button,
                        "Stretch",
                        self.server_button, self.model_list_button, settings_button
                        ]:
@@ -540,19 +582,19 @@ class ChatWindow(QMainWindow):
         self.user_name = prompt_settings["user_name"]
         self.ai_name = prompt_settings["ai_name"]
         self.base_url = "http://localhost:35634/v1/chat/completions"
-        sys_prompt = prompt_settings["sys_prompt"]
+        self.sys_prompt = prompt_settings["sys_prompt"]
 
         iso_code = get_iso_country_code()
         date, holiday = get_formatted_date_and_holiday(iso_code)
         current_time = datetime.now().strftime("%I:%M %p")
         if holiday != "":
-            sys_prompt_mod = sys_prompt + f" [Conversation Start time: {current_time}, Date: {date}, Holiday: {holiday}]"
+            self.sys_prompt_mod = self.sys_prompt + f" [Conversation Start time: {current_time}, Date: {date}, Holiday: {holiday}]"
         else:
-            sys_prompt_mod = sys_prompt + f" [Conversation Start time: {current_time}, Date: {date}]"
+            self.sys_prompt_mod = self.sys_prompt + f" [Conversation Start time: {current_time}, Date: {date}]"
 
         self.messages = [
             {"role": "system",
-             "content": str(sys_prompt_mod)},
+             "content": str(self.sys_prompt_mod)},
         ]
 
         self.current_tokens_sum = 0

@@ -3,9 +3,13 @@ import json
 from collections import OrderedDict
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QPalette, QColor
 from PySide6.QtWidgets import (QApplication, QMainWindow, QDialog, QLineEdit,
-                               QTextEdit, QLabel, QVBoxLayout, QFormLayout, QMessageBox, QDialogButtonBox, QHBoxLayout,
-                               QPushButton, QInputDialog, QListWidgetItem, QListWidget)
+                               QTextEdit, QLabel, QVBoxLayout, QFormLayout, QDialogButtonBox, QHBoxLayout,
+                               QPushButton, QInputDialog, QListWidgetItem, QListWidget, QWidget)
+import services.windows_api_handler
+from components.custom_message_box import CustomMessageBox
+from components.custom_titlebar import CustomTitleBar
 
 
 class MemoryManager:
@@ -48,103 +52,46 @@ class MemoryManager:
             self.save()
 
 
-# class MemoryDialog(QDialog):
-#     def __init__(self, _memory_manager, parent=None):
-#         super().__init__(parent)
-#         self.memory_manager = _memory_manager
-#         self.setWindowTitle("Memory Manager")
-#
-#         self.content_edit = QLineEdit()
-#         self.timestamp_label = QLabel()
-#         self.timestamp_label.setAlignment(Qt.AlignRight)
-#         self.memory_text = QTextEdit()
-#         self.memory_text.setReadOnly(True)
-#
-#         self.add_button = QPushButton("Add")
-#         self.add_button.clicked.connect(self.add_memory)
-#
-#         self.delete_button = QPushButton("Delete")
-#         self.delete_button.clicked.connect(self.delete_memory)
-#
-#         self.modify_button = QPushButton("Modify")
-#         self.modify_button.clicked.connect(self.modify_memory)
-#
-#         self.button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Discard)
-#         self.button_box.accepted.connect(self.save_memory)
-#         self.button_box.rejected.connect(self.reject)
-#
-#         form_layout = QFormLayout()
-#         form_layout.addRow("Content:", self.content_edit)
-#         form_layout.addRow("Timestamp:", self.timestamp_label)
-#
-#         button_layout = QHBoxLayout()
-#         button_layout.addWidget(self.add_button)
-#         button_layout.addWidget(self.delete_button)
-#         button_layout.addWidget(self.modify_button)
-#
-#         main_layout = QVBoxLayout()
-#         main_layout.addLayout(form_layout)
-#         main_layout.addWidget(self.memory_text)
-#         main_layout.addLayout(button_layout)
-#         main_layout.addWidget(self.button_box)
-#
-#         self.setLayout(main_layout)
-#
-#         self.show_memories()
-#
-#     def show_memories(self):
-#         all_memories = self.memory_manager.get_memories()
-#         memory_strings = [f"{memory['timestamp']} - {memory['content']}" for memory in all_memories]
-#         self.memory_text.setText("\n".join(memory_strings))
-#
-#     def add_memory(self):
-#         content = self.content_edit.text()
-#         if not content:
-#             QMessageBox.warning(self, "Warning", "Memory content cannot be empty.")
-#             return
-#         self.memory_manager.add_memory(content)
-#         self.show_memories()
-#
-#     def delete_memory(self):
-#         selected_text = self.memory_text.textCursor().selectedText()
-#         if not selected_text:
-#             QMessageBox.warning(self, "Warning", "Please select a memory to delete.")
-#             return
-#
-#         timestamp = selected_text.split(" - ", 1)[0]
-#
-#         self.memory_manager.delete_memory(timestamp)
-#         self.show_memories()
-#
-#     def modify_memory(self):
-#         selected_text = self.memory_text.textCursor().selectedText()
-#         if not selected_text:
-#             QMessageBox.warning(self, "Warning", "Please select a memory to modify.")
-#             return
-#         timestamp = selected_text.split(" - ", 1)[0]
-#
-#         modified_content, okPressed = QInputDialog.getText(self, "Modify Memory", "Enter modified content:")
-#         if okPressed:
-#             self.memory_manager.modify_memory(timestamp, modified_content)
-#             self.show_memories()
-#
-#     def save_memory(self):
-#         content = self.content_edit.text()
-#         if not content:
-#             QMessageBox.warning(self, "Warning", "Memory content cannot be empty.")
-#             return
-#         timestamp = self.memory_manager.add_memory(content)
-#         self.timestamp_label.setText(timestamp)
-#         self.show_memories()
-
-
-class MemoryDialog(QDialog):
-    def __init__(self, memory_manager, parent=None):
+class MemoryWindow(QMainWindow):
+    def __init__(self, _memory_manager, parent=None):
         super().__init__(parent)
-        self.memory_manager = memory_manager
+
+        self.messagebox = None
+        screen = QApplication.primaryScreen()
+        screen_geometry = screen.geometry()
+        screen_width = screen_geometry.width()
+        screen_height = screen_geometry.height()
+
+        self.init_width = int(screen_width * 0.42)
+        self.init_height = int(screen_height * 0.72)
+        self.resize(self.init_width, self.init_height)
+
+        self.move(int((screen_width - self.init_width) / 2), int((screen_height - self.init_height) / 2))
+
+        self.memory_manager = _memory_manager
+
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint
+                            | Qt.WindowMaximizeButtonHint)
+        self.titleBar = CustomTitleBar(self, custom_title="Matcha Chat 2 - Memory Manager")
+        self.setMenuWidget(self.titleBar)
         self.setWindowTitle("Memory Manager")
 
+        palette = QPalette()
+        palette.setColor(QPalette.Window, QColor(0, 0, 0))
+        self.setPalette(palette)
+
+        self.setStyleSheet("background:transparent")
+        self.windowEffect = services.windows_api_handler.WindowEffect()
+        self.windowEffect.setAcrylicEffect(int(self.winId()), gradientColor='00101080')
+
+        central_widget = QWidget(self)
+        self.setCentralWidget(central_widget)
+
         self.content_edit = QLineEdit()
+        palette = self.content_edit.palette()
+        palette.setColor(QPalette.Highlight, QColor("#5bb481"))
+        self.content_edit.setPalette(palette)
+
         self.timestamp_label = QLabel()
         self.timestamp_label.setAlignment(Qt.AlignRight)
 
@@ -166,13 +113,30 @@ class MemoryDialog(QDialog):
 
         self.button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Discard)
         self.button_box.accepted.connect(self.save_memory)
-        self.button_box.rejected.connect(self.reject)
+        # self.button_box.rejected.connect(self.reject)
+
+        for button in [self.add_button, self.delete_button, self.modify_button]:
+            button_style = """
+                    QPushButton {
+                        background-color: #599e5e;
+                        border: none;
+                        padding-top: 2px;
+                        padding-right: 10px;
+                        padding-bottom: 2px;
+                        padding-left: 10px;
+                    }
+
+                    QPushButton:hover {
+                        background-color: #2b8451;
+                    }
+                    """
+            button.setStyleSheet(button_style)
 
         form_layout = QFormLayout()
         form_layout.addRow("Content:", self.content_edit)
         form_layout.addRow("Timestamp:", self.timestamp_label)
 
-        main_layout = QHBoxLayout()
+        main_layout = QHBoxLayout(central_widget)
         main_layout.addWidget(self.memory_list)
 
         right_layout = QVBoxLayout()
@@ -196,7 +160,70 @@ class MemoryDialog(QDialog):
 
         self.setLayout(main_layout)
 
+        hey_stylesheet = """
+                QTextEdit, QLineEdit {
+                    border: 2px solid transparent;
+                    border-radius: 0px;
+                }
+                QTextEdit:focus, QLineEdit:focus {
+                    border: 2px solid #599e5e;
+                }
+                QScrollBar:vertical {
+                    border: none;
+                    background-color: lightgray;
+                    width: 8px;
+                }
+                QScrollBar::handle:vertical {
+                    background-color: #599e5e;
+                    border-radius: 0px;
+                }
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                    background: none;
+                }
+                """
+        for widget in [self.content_edit, self.memory_text]:
+            widget.setStyleSheet(hey_stylesheet)
+
+        self.memory_list.setStyleSheet("""
+                    QListWidget::item:selected {
+                        background-color: #599e5e;
+                    }
+                    
+                    QScrollBar:vertical {
+                        border: 0px solid grey;
+                        background: #f1f1f1;
+                        width: 10px;
+                        margin: 0 0 0 0;
+                    }
+                    
+                    QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {
+                        border: 2px solid grey;
+                        background: #8f8f8f;
+                        height: 20px;
+                        subcontrol-position: top;
+                        subcontrol-origin: margin;
+                    }
+                    
+                    QScrollBar::add-line:vertical {
+                        subcontrol-position: bottom;
+                    }
+                    
+                    QScrollBar::handle:vertical {
+                        background: #599e5e;
+                        min-height: 20px;
+                    }
+                    
+                    QScrollBar::handle:vertical:hover {
+                        background: #599e5e;
+                    }
+                    
+                    QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                        background: none;
+                    }
+                """)
+
         self.show_memories()
+        self.content_edit.setFocus()
 
     def show_memories(self):
         self.memory_list.clear()
@@ -223,7 +250,8 @@ class MemoryDialog(QDialog):
     def add_memory(self):
         content = self.content_edit.text()
         if not content:
-            QMessageBox.warning(self, "Warning", "Memory content cannot be empty.")
+            self.messagebox = CustomMessageBox(title="Warning", text="Memory content cannot be empty.")
+            self.messagebox.show()
             return
         self.memory_manager.add_memory(content)
         self.show_memories()
@@ -232,7 +260,8 @@ class MemoryDialog(QDialog):
     def delete_memory(self):
         selected_items = self.memory_list.selectedItems()
         if not selected_items:
-            QMessageBox.warning(self, "Warning", "Please select one or more memories to delete.")
+            self.messagebox = CustomMessageBox(title="Warning", text="Memory content cannot be empty.")
+            self.messagebox.show()
             return
 
         timestamps_to_delete = [item.text() for item in selected_items]
@@ -246,7 +275,8 @@ class MemoryDialog(QDialog):
     def modify_memory(self):
         selected_items = self.memory_list.selectedItems()
         if not selected_items:
-            QMessageBox.warning(self, "Warning", "Please select a memory to modify.")
+            self.messagebox = CustomMessageBox(title="Warning", text="Please select a memory to modify.")
+            self.messagebox.show()
             return
 
         selected_item = selected_items[0]
@@ -261,7 +291,8 @@ class MemoryDialog(QDialog):
     def save_memory(self):
         content = self.content_edit.text()
         if not content:
-            QMessageBox.warning(self, "Warning", "Memory content cannot be empty.")
+            self.messagebox = CustomMessageBox(title="Warning", text="Memory content cannot be empty.")
+            self.messagebox.show()
             return
         self.memory_manager.add_memory(content)
         self.show_memories()
@@ -277,7 +308,7 @@ if __name__ == "__main__":
     main_window.setWindowTitle("Main Window")
     main_window.show()
 
-    memory_dialog = MemoryDialog(memory_manager, main_window)
+    memory_dialog = MemoryWindow(memory_manager, main_window)
     memory_dialog.show()
 
     app.exec()
